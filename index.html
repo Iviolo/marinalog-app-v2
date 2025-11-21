@@ -1,126 +1,167 @@
 <!DOCTYPE html>
-<html lang="it">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MarinaLog</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #1e3c72, #2a5298, #7e22ce);
+            color: white;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { text-align: center; margin: 20px 0; font-size: 32px; }
+        .buttons { display: flex; gap: 10px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
+        button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; background: #4b5563; color: white; }
+        button.active { background: #3b82f6; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
+        .stat { background: #2a3442; padding: 15px; border-radius: 8px; text-align: center; }
+        .stat-value { font-size: 24px; font-weight: bold; }
+        .stat-label { font-size: 12px; margin-top: 5px; color: #bbb; }
+        .stat-blue { border-left: 4px solid #3b82f6; }
+        .stat-red { border-left: 4px solid #ef4444; }
+        .stat-green { border-left: 4px solid #10b981; }
+        .stat-yellow { border-left: 4px solid #f59e0b; }
+        .content { background: #1a2332; padding: 20px; border-radius: 8px; min-height: 300px; }
+        .form-group { margin: 15px 0; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #444; border-radius: 5px; background: #2a3442; color: white; font-size: 14px; }
+        .submit-btn { background: #3b82f6; padding: 12px; width: 100%; font-size: 16px; margin-top: 10px; }
+        .submit-btn:hover { background: #2563eb; }
+        .entry { background: #2a3442; padding: 12px; margin: 10px 0; border-left: 3px solid #3b82f6; border-radius: 4px; display: flex; justify-content: space-between; }
+        .entry-text { flex: 1; }
+        .entry-date { font-weight: bold; }
+        .entry-type { font-size: 11px; color: #3b82f6; margin-top: 3px; }
+        .entry-note { font-size: 12px; color: #aaa; margin-top: 5px; }
+        .delete-btn { background: #ef4444; padding: 5px 10px; border: none; cursor: pointer; border-radius: 3px; color: white; }
+        .delete-btn:hover { background: #dc2626; }
+        .empty { text-align: center; color: #888; padding: 40px 20px; }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-blue-900 to-purple-900 min-h-screen text-white">
-    <div id="app" class="p-4 max-w-4xl mx-auto"></div>
+<body>
+    <div class="container">
+        <h1>MarinaLog</h1>
+        <div class="buttons">
+            <button onclick="switchTab('dashboard')" id="btn-dashboard" class="active">Dashboard</button>
+            <button onclick="switchTab('form')" id="btn-form">Aggiungi</button>
+            <button onclick="switchTab('history')" id="btn-history">Cronologia</button>
+        </div>
+        <div class="content" id="content"></div>
+    </div>
 
     <script>
         const API_KEY = 'AIzaSyBNCf0dmzdrk3UjQzif6JWaV7jAhle-GM';
-        let state = {
-            tab: 'dashboard',
-            entries: JSON.parse(localStorage.getItem('marineLogs') || '[]')
-        };
+        let currentTab = 'dashboard';
+        let entries = JSON.parse(localStorage.getItem('marineLogs') || '[]');
 
-        const render = () => {
-            const ordinary = state.entries.filter(e => e.type === 'ordinary').length;
-            const sick = state.entries.filter(e => e.type === 'sick').length;
-            const oncall = state.entries.filter(e => e.type === 'oncall').length;
-            const guard = state.entries.filter(e => e.type === 'guard').length;
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('btn-dashboard').classList.remove('active');
+            document.getElementById('btn-form').classList.remove('active');
+            document.getElementById('btn-history').classList.remove('active');
+            document.getElementById('btn-' + tab).classList.add('active');
+            render();
+        }
+
+        function render() {
+            const content = document.getElementById('content');
+            if (currentTab === 'dashboard') renderDashboard(content);
+            else if (currentTab === 'form') renderForm(content);
+            else renderHistory(content);
+        }
+
+        function renderDashboard(el) {
+            const ordinary = entries.filter(e => e.type === 'ordinary').length;
+            const sick = entries.filter(e => e.type === 'sick').length;
+            const oncall = entries.filter(e => e.type === 'oncall').length;
+            const guard = entries.filter(e => e.type === 'guard').length;
             const compensation = (oncall * 30) + (guard * 90);
 
-            const html = `
-                <div class="space-y-4">
-                    <h1 class="text-4xl font-bold text-center mb-8">MarinaLog</h1>
-                    
-                    <div class="flex gap-2 justify-center flex-wrap">
-                        <button onclick="setTab('dashboard')" class="px-4 py-2 rounded ${state.tab === 'dashboard' ? 'bg-blue-500' : 'bg-gray-700'}">Dashboard</button>
-                        <button onclick="setTab('form')" class="px-4 py-2 rounded ${state.tab === 'form' ? 'bg-blue-500' : 'bg-gray-700'}">Aggiungi</button>
-                        <button onclick="setTab('history')" class="px-4 py-2 rounded ${state.tab === 'history' ? 'bg-blue-500' : 'bg-gray-700'}">Cronologia</button>
-                    </div>
-
-                    ${state.tab === 'dashboard' ? `
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                            <div class="bg-blue-600 p-4 rounded text-center">
-                                <div class="text-2xl font-bold">${ordinary}/39</div>
-                                <div class="text-sm">Ferie Ord.</div>
-                            </div>
-                            <div class="bg-red-600 p-4 rounded text-center">
-                                <div class="text-2xl font-bold">${sick}/4</div>
-                                <div class="text-sm">Malattia</div>
-                            </div>
-                            <div class="bg-green-600 p-4 rounded text-center">
-                                <div class="text-2xl font-bold">${oncall}</div>
-                                <div class="text-sm">Reperibilità</div>
-                            </div>
-                            <div class="bg-yellow-600 p-4 rounded text-center">
-                                <div class="text-2xl font-bold">€${compensation}</div>
-                                <div class="text-sm">Compensi</div>
-                            </div>
-                        </div>
-                        <div class="bg-gray-800 p-4 rounded mt-6">
-                            <h3 class="text-lg font-bold mb-4">Ultime Registrazioni</h3>
-                            <div class="space-y-2 max-h-64 overflow-y-auto">
-                                ${state.entries.slice(-10).reverse().map((e, i) => `
-                                    <div class="bg-gray-700 p-3 rounded text-sm">
-                                        <div class="font-semibold">${e.date} - ${e.type.toUpperCase()}</div>
-                                        <div class="text-gray-300">${e.note || '-'}</div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : state.tab === 'form' ? `
-                        <form onsubmit="addEntry(event)" class="bg-gray-800 p-6 rounded mt-6 space-y-4">
-                            <input type="date" id="date" value="${new Date().toISOString().split('T')[0]}" class="w-full px-3 py-2 bg-gray-700 rounded text-white" required>
-                            
-                            <select id="type" class="w-full px-3 py-2 bg-gray-700 rounded text-white">
-                                <option value="ordinary">Ferie Ordinarie</option>
-                                <option value="sick">Malattia</option>
-                                <option value="oncall">Reperibilità (€30)</option>
-                                <option value="guard">Guardia (€90)</option>
-                            </select>
-                            
-                            <textarea id="note" placeholder="Note..." class="w-full px-3 py-2 bg-gray-700 rounded text-white h-20"></textarea>
-                            
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold">Registra</button>
-                        </form>
-                    ` : `
-                        <div class="bg-gray-800 p-6 rounded mt-6 space-y-2 max-h-96 overflow-y-auto">
-                            ${state.entries.length === 0 ? '<p class="text-gray-400 text-center py-8">Nessuna registrazione</p>' : state.entries.reverse().map(e => `
-                                <div class="bg-gray-700 p-4 rounded flex justify-between items-start">
-                                    <div>
-                                        <div class="font-semibold">${e.date}</div>
-                                        <div class="text-sm text-blue-400 uppercase">${e.type}</div>
-                                        <div class="text-gray-300 text-sm mt-1">${e.note || '-'}</div>
-                                    </div>
-                                    <button onclick="deleteEntry('${e.id}')" class="text-red-400 hover:text-red-600">🗑</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `}
+            el.innerHTML = `
+                <div class="stats">
+                    <div class="stat stat-blue"><div class="stat-value">${ordinary}/39</div><div class="stat-label">Ferie Ord.</div></div>
+                    <div class="stat stat-red"><div class="stat-value">${sick}/4</div><div class="stat-label">Malattia</div></div>
+                    <div class="stat stat-green"><div class="stat-value">${oncall}</div><div class="stat-label">Reperibilità</div></div>
+                    <div class="stat stat-yellow"><div class="stat-value">€${compensation}</div><div class="stat-label">Compensi</div></div>
                 </div>
+                <h3 style="margin-bottom: 15px;">Ultime Registrazioni</h3>
+                ${entries.length === 0 ? '<div class="empty">Nessuna registrazione</div>' : entries.slice(-5).reverse().map(e => `
+                    <div class="entry">
+                        <div class="entry-text">
+                            <div class="entry-date">${e.date}</div>
+                            <div class="entry-type">${e.type.toUpperCase()}</div>
+                            <div class="entry-note">${e.note || '-'}</div>
+                        </div>
+                    </div>
+                `).join('')}
             `;
-            document.getElementById('app').innerHTML = html;
-        };
+        }
 
-        const setTab = (tab) => {
-            state.tab = tab;
-            render();
-        };
+        function renderForm(el) {
+            const today = new Date().toISOString().split('T')[0];
+            el.innerHTML = `
+                <form onsubmit="addEntry(event)">
+                    <div class="form-group">
+                        <label>Data:</label>
+                        <input type="date" id="entry-date" value="${today}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo:</label>
+                        <select id="entry-type" required>
+                            <option value="ordinary">Ferie Ordinarie</option>
+                            <option value="sick">Malattia</option>
+                            <option value="oncall">Reperibilità (€30)</option>
+                            <option value="guard">Guardia (€90)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Note:</label>
+                        <textarea id="entry-note" placeholder="Aggiungi una nota..." rows="4"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Registra</button>
+                </form>
+            `;
+        }
 
-        const addEntry = (e) => {
-            e.preventDefault();
+        function renderHistory(el) {
+            el.innerHTML = `
+                <h3 style="margin-bottom: 15px;">Tutte le Registrazioni</h3>
+                ${entries.length === 0 ? '<div class="empty">Nessuna registrazione</div>' : entries.slice().reverse().map((e, i) => `
+                    <div class="entry">
+                        <div class="entry-text">
+                            <div class="entry-date">${e.date}</div>
+                            <div class="entry-type">${e.type.toUpperCase()}</div>
+                            <div class="entry-note">${e.note || '-'}</div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteEntry(${entries.length - 1 - i})">Elimina</button>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function addEntry(event) {
+            event.preventDefault();
             const entry = {
-                id: Date.now().toString(),
-                date: document.getElementById('date').value,
-                type: document.getElementById('type').value,
-                note: document.getElementById('note').value
+                id: Date.now(),
+                date: document.getElementById('entry-date').value,
+                type: document.getElementById('entry-type').value,
+                note: document.getElementById('entry-note').value
             };
-            state.entries.push(entry);
-            localStorage.setItem('marineLogs', JSON.stringify(state.entries));
-            state.tab = 'dashboard';
-            render();
-        };
+            entries.push(entry);
+            localStorage.setItem('marineLogs', JSON.stringify(entries));
+            switchTab('dashboard');
+        }
 
-        const deleteEntry = (id) => {
-            state.entries = state.entries.filter(e => e.id !== id);
-            localStorage.setItem('marineLogs', JSON.stringify(state.entries));
-            render();
-        };
+        function deleteEntry(index) {
+            if (confirm('Sei sicuro?')) {
+                entries.splice(index, 1);
+                localStorage.setItem('marineLogs', JSON.stringify(entries));
+                render();
+            }
+        }
 
         render();
     </script>
