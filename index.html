@@ -1,83 +1,128 @@
 <!DOCTYPE html>
 <html lang="it">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MarinaLog - Gestione Personale</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarinaLog</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              display: ['Montserrat', 'sans-serif'],
-            },
-            colors: {
-              navy: {
-                800: '#1B2A41',
-                900: '#0F172A',
-              },
-              gold: {
-                400: '#FBBF24',
-                500: '#F59E0B',
-                600: '#D97706',
-              }
-            },
-            animation: {
-              'fade-in': 'fadeIn 0.5s ease-out',
-              'slide-up': 'slideUp 0.5s ease-out',
-            },
-            keyframes: {
-              fadeIn: {
-                '0%': { opacity: '0' },
-                '100%': { opacity: '1' },
-              },
-              slideUp: {
-                '0%': { transform: 'translateY(20px)', opacity: '0' },
-                '100%': { transform: 'translateY(0)', opacity: '1' },
-              }
-            }
-          }
-        }
-      }
-    </script>
-    <style>
-      body {
-        background-color: #0f172a; /* navy-900 */
-        color: white;
-      }
-      /* Custom Scrollbar */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #1e293b;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #475569;
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #64748b;
-      }
-    </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
-    "recharts": "https://aistudiocdn.com/recharts@^3.4.1",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
-  }
-}
-</script>
 </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<body class="bg-gradient-to-br from-blue-900 to-purple-900 min-h-screen text-white">
+    <div id="app" class="p-4 max-w-4xl mx-auto"></div>
+
+    <script>
+        const API_KEY = 'AIzaSyBNCf0dmzdrk3UjQzif6JWaV7jAhle-GM';
+        let state = {
+            tab: 'dashboard',
+            entries: JSON.parse(localStorage.getItem('marineLogs') || '[]')
+        };
+
+        const render = () => {
+            const ordinary = state.entries.filter(e => e.type === 'ordinary').length;
+            const sick = state.entries.filter(e => e.type === 'sick').length;
+            const oncall = state.entries.filter(e => e.type === 'oncall').length;
+            const guard = state.entries.filter(e => e.type === 'guard').length;
+            const compensation = (oncall * 30) + (guard * 90);
+
+            const html = `
+                <div class="space-y-4">
+                    <h1 class="text-4xl font-bold text-center mb-8">MarinaLog</h1>
+                    
+                    <div class="flex gap-2 justify-center flex-wrap">
+                        <button onclick="setTab('dashboard')" class="px-4 py-2 rounded ${state.tab === 'dashboard' ? 'bg-blue-500' : 'bg-gray-700'}">Dashboard</button>
+                        <button onclick="setTab('form')" class="px-4 py-2 rounded ${state.tab === 'form' ? 'bg-blue-500' : 'bg-gray-700'}">Aggiungi</button>
+                        <button onclick="setTab('history')" class="px-4 py-2 rounded ${state.tab === 'history' ? 'bg-blue-500' : 'bg-gray-700'}">Cronologia</button>
+                    </div>
+
+                    ${state.tab === 'dashboard' ? `
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                            <div class="bg-blue-600 p-4 rounded text-center">
+                                <div class="text-2xl font-bold">${ordinary}/39</div>
+                                <div class="text-sm">Ferie Ord.</div>
+                            </div>
+                            <div class="bg-red-600 p-4 rounded text-center">
+                                <div class="text-2xl font-bold">${sick}/4</div>
+                                <div class="text-sm">Malattia</div>
+                            </div>
+                            <div class="bg-green-600 p-4 rounded text-center">
+                                <div class="text-2xl font-bold">${oncall}</div>
+                                <div class="text-sm">Reperibilità</div>
+                            </div>
+                            <div class="bg-yellow-600 p-4 rounded text-center">
+                                <div class="text-2xl font-bold">€${compensation}</div>
+                                <div class="text-sm">Compensi</div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded mt-6">
+                            <h3 class="text-lg font-bold mb-4">Ultime Registrazioni</h3>
+                            <div class="space-y-2 max-h-64 overflow-y-auto">
+                                ${state.entries.slice(-10).reverse().map((e, i) => `
+                                    <div class="bg-gray-700 p-3 rounded text-sm">
+                                        <div class="font-semibold">${e.date} - ${e.type.toUpperCase()}</div>
+                                        <div class="text-gray-300">${e.note || '-'}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : state.tab === 'form' ? `
+                        <form onsubmit="addEntry(event)" class="bg-gray-800 p-6 rounded mt-6 space-y-4">
+                            <input type="date" id="date" value="${new Date().toISOString().split('T')[0]}" class="w-full px-3 py-2 bg-gray-700 rounded text-white" required>
+                            
+                            <select id="type" class="w-full px-3 py-2 bg-gray-700 rounded text-white">
+                                <option value="ordinary">Ferie Ordinarie</option>
+                                <option value="sick">Malattia</option>
+                                <option value="oncall">Reperibilità (€30)</option>
+                                <option value="guard">Guardia (€90)</option>
+                            </select>
+                            
+                            <textarea id="note" placeholder="Note..." class="w-full px-3 py-2 bg-gray-700 rounded text-white h-20"></textarea>
+                            
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold">Registra</button>
+                        </form>
+                    ` : `
+                        <div class="bg-gray-800 p-6 rounded mt-6 space-y-2 max-h-96 overflow-y-auto">
+                            ${state.entries.length === 0 ? '<p class="text-gray-400 text-center py-8">Nessuna registrazione</p>' : state.entries.reverse().map(e => `
+                                <div class="bg-gray-700 p-4 rounded flex justify-between items-start">
+                                    <div>
+                                        <div class="font-semibold">${e.date}</div>
+                                        <div class="text-sm text-blue-400 uppercase">${e.type}</div>
+                                        <div class="text-gray-300 text-sm mt-1">${e.note || '-'}</div>
+                                    </div>
+                                    <button onclick="deleteEntry('${e.id}')" class="text-red-400 hover:text-red-600">🗑</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+            `;
+            document.getElementById('app').innerHTML = html;
+        };
+
+        const setTab = (tab) => {
+            state.tab = tab;
+            render();
+        };
+
+        const addEntry = (e) => {
+            e.preventDefault();
+            const entry = {
+                id: Date.now().toString(),
+                date: document.getElementById('date').value,
+                type: document.getElementById('type').value,
+                note: document.getElementById('note').value
+            };
+            state.entries.push(entry);
+            localStorage.setItem('marineLogs', JSON.stringify(state.entries));
+            state.tab = 'dashboard';
+            render();
+        };
+
+        const deleteEntry = (id) => {
+            state.entries = state.entries.filter(e => e.id !== id);
+            localStorage.setItem('marineLogs', JSON.stringify(state.entries));
+            render();
+        };
+
+        render();
+    </script>
+</body>
 </html>
