@@ -1,1 +1,361 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>MarinaLog - Gestione Personale</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}.header{background:#fff;padding:20px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.2);margin-bottom:20px;text-align:center}.header h1{color:#667eea;font-size:28px}.container{max-width:900px;margin:0 auto}.tabs{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;overflow-x:auto}.tab-btn{padding:12px 25px;background:#fff;border:2px solid #ddd;border-radius:8px;cursor:pointer;font-weight:bold;color:#667eea;transition:all 0.3s;white-space:nowrap}.tab-btn.active{background:#667eea;color:#fff;border-color:#667eea}.tab-content{background:#fff;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.2);display:none}.tab-content.active{display:block}.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:20px;margin-bottom:30px}.stat-card{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:20px;border-radius:10px;text-align:center}.stat-card.pink{background:linear-gradient(135deg,#f093fb,#f5576c)}.stat-card.cyan{background:linear-gradient(135deg,#4facfe,#00f2fe)}.stat-card.green{background:linear-gradient(135deg,#43e97b,#38f9d7)}.stat-value{font-size:32px;font-weight:bold;margin:10px 0}.form-group{margin:20px 0}.form-group label{display:block;font-weight:bold;margin-bottom:8px}.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:14px}.btn-submit{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:14px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;width:100%;font-size:16px}.entry-item{background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:10px;border-left:5px solid #667eea;display:flex;justify-content:space-between;align-items:center}.btn-delete{background:#f5576c;color:#fff;border:none;padding:8px 15px;border-radius:6px;cursor:pointer;font-weight:bold}.no-data{text-align:center;color:#999;padding:40px}.chat-box{background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:15px;height:400px;overflow-y:auto;margin-bottom:15px}.chat-message{margin:10px 0;padding:10px;border-radius:6px;background:#e3f2fd;color:#333;word-wrap:break-word}.chat-message.user{background:#667eea;color:#fff;text-align:right;margin-left:20%}.chat-message.bot{background:#f0f0f0;color:#333;margin-right:20%}.chat-input-group{display:flex;gap:10px}.chat-input-group input{flex:1;padding:10px;border:2px solid #ddd;border-radius:8px}.chat-input-group button{padding:10px 20px;background:#667eea;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold}.loading{color:#999;font-style:italic}</style></head><body><div class="header"><h1>⚓ MARINALOG</h1><p>Gestione Personale - Ferie, Reperibilità e Guardie</p></div><div class="container"><div class="tabs"><button class="tab-btn active" data-tab="dashboard">Dashboard</button><button class="tab-btn" data-tab="add">Aggiungi</button><button class="tab-btn" data-tab="history">Cronologia</button><button class="tab-btn" data-tab="assistant">🤖 Assistente IA</button></div><div id="dashboard" class="tab-content active"><h2>Statistiche</h2><div class="stats-grid"><div class="stat-card"><div>Ferie Ordinarie</div><div class="stat-value" id="ferie-val">0/39</div></div><div class="stat-card pink"><div>Malattia</div><div class="stat-value" id="malattia-val">0/4</div></div><div class="stat-card cyan"><div>Reperibilità (h)</div><div class="stat-value" id="reperibilita-val">0</div></div><div class="stat-card green"><div>Compensi</div><div class="stat-value" id="compensi-val">€0</div></div></div><h3>Ultime Registrazioni</h3><div id="latest-entries"></div></div><div id="add" class="tab-content"><h2>Aggiungi Registrazione</h2><form onsubmit="addEntry(event)"><div class="form-group"><label>Data:</label><input type="date" id="entry-date" required></div><div class="form-group"><label>Tipo:</label><select id="entry-type" required><option>Ferie Ordinarie</option><option>Malattia</option><option>Reperibilità</option><option>Guardia</option></select></div><div class="form-group"><label>Ore:</label><input type="number" id="entry-hours" placeholder="es. 8" min="0" step="0.5"></div><div class="form-group"><label>Note:</label><textarea id="entry-notes" placeholder="Aggiungi note..."></textarea></div><button type="submit" class="btn-submit">✓ Registra</button></form></div><div id="history" class="tab-content"><h2>Cronologia</h2><div id="history-entries"></div></div><div id="assistant" class="tab-content"><h2>🤖 Assistente IA (Gemini)</h2><div class="chat-box" id="chat-box"></div><div class="chat-input-group"><input type="text" id="chat-input" placeholder="Chiedi qualsiasi cosa all'IA..."><button onclick="sendAIMessage()" type="button">Invia</button></div></div></div><script>const GEMINI_API_KEY='AIzaSyBNCf0dmzdrk3UjQzif6JWaV7jAhle-GM';let entries=JSON.parse(localStorage.getItem('marinalog_entries'))||[];document.querySelectorAll('.tab-btn').forEach(btn=>{btn.addEventListener('click',function(){showTab(this.getAttribute('data-tab'))})});function showTab(tab){document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));document.getElementById(tab).classList.add('active');document.querySelector('[data-tab="'+tab+'"]').classList.add('active')}function addEntry(e){e.preventDefault();const entry={date:document.getElementById('entry-date').value,type:document.getElementById('entry-type').value,hours:parseFloat(document.getElementById('entry-hours').value)||0,notes:document.getElementById('entry-notes').value};entries.push(entry);localStorage.setItem('marinalog_entries',JSON.stringify(entries));updateStats();document.getElementById('entry-hours').value='';document.getElementById('entry-notes').value='';alert('✓ Registrazione aggiunta!')}function updateStats(){let ferie=entries.filter(e=>e.type==='Ferie Ordinarie').length;let malattia=entries.filter(e=>e.type==='Malattia').length;let reperibilita=entries.filter(e=>e.type==='Reperibilità').reduce((sum,e)=>sum+e.hours,0);let guardia=entries.filter(e=>e.type==='Guardia').reduce((sum,e)=>sum+e.hours,0);let compensi=(reperibilita*30)+(guardia*90);document.getElementById('ferie-val').textContent=ferie+'/39';document.getElementById('malattia-val').textContent=malattia+'/4';document.getElementById('reperibilita-val').textContent=reperibilita.toFixed(1);document.getElementById('compensi-val').textContent='€'+compensi.toFixed(2);renderLatest()}function renderLatest(){let html='';entries.slice(-5).reverse().forEach((e,idx)=>{html+=`<div class="entry-item"><div><strong>${e.date}</strong> - ${e.type}${e.hours?' ('+e.hours+'h)':''}</div><button type="button" class="btn-delete" onclick="deleteEntry(${entries.length-1-idx})">❌</button></div>`});document.getElementById('latest-entries').innerHTML=html||'<div class="no-data">Nessuna registrazione</div>'}function renderHistory(){let html='';entries.forEach((e,idx)=>{html+=`<div class="entry-item"><div><strong>${e.date}</strong> - ${e.type}${e.hours?' ('+e.hours+'h)':''}</div><button type="button" class="btn-delete" onclick="deleteEntry(${idx})">❌</button></div>`});document.getElementById('history-entries').innerHTML=html||'<div class="no-data">Nessuna registrazione</div>'}function deleteEntry(idx){if(confirm('Elimina?')){entries.splice(idx,1);localStorage.setItem('marinalog_entries',JSON.stringify(entries));updateStats();renderHistory()}}async function sendAIMessage(){const input=document.getElementById('chat-input');const msg=input.value.trim();if(!msg)return;const chatBox=document.getElementById('chat-box');const userMsg=document.createElement('div');userMsg.className='chat-message user';userMsg.textContent=msg;chatBox.appendChild(userMsg);input.value='';const botMsg=document.createElement('div');botMsg.className='chat-message bot loading';botMsg.textContent='Gemini sta rispondendo...';chatBox.appendChild(botMsg);try{const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'Contesto: Sono un assistente per un app di gestione leave/ferie. Dati utente: Ferie: '+entries.filter(e=>e.type==='Ferie Ordinarie').length+'/39, Malattia: '+entries.filter(e=>e.type==='Malattia').length+'/4, Reperibilità: '+entries.filter(e=>e.type==='Reperibilità').reduce((s,e)=>s+e.hours,0)+'h, Guardia: '+entries.filter(e=>e.type==='Guardia').reduce((s,e)=>s+e.hours,0)+'h. Domanda utente: '+msg}]},]}});const data=await response.json();const text=data.candidates?.[0]?.content?.parts?.[0]?.text||'Scusa, non riesco a elaborare questa richiesta.';botMsg.textContent=text;botMsg.classList.remove('loading')}catch(e){botMsg.textContent='Errore: '+e.message;botMsg.classList.remove('loading')}chatBox.scrollTop=chatBox.scrollHeight}function init(){const today=new Date().toISOString().split('T')[0];document.getElementById('entry-date').value=today;updateStats();renderHistory();document.getElementById('chat-input').addEventListener('keypress',e=>{if(e.key==='Enter')sendAIMessage()})}init()</script></body></html>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarinaLog - Gestione Personale</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            min-height: 100vh;
+            padding: 10px;
+            animation: bgShift 15s ease infinite;
+        }
+        @keyframes bgShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.97);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .tabs-container {
+            display: flex;
+            gap: 5px;
+            padding: 15px 10px;
+            background: #f5f5f5;
+            overflow-x: auto;
+            border-bottom: 2px solid #ddd;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 10px 16px;
+            border: 2px solid transparent;
+            background: white;
+            color: #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            white-space: nowrap;
+            font-size: 13px;
+        }
+        .tab-btn:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .content {
+            padding: 20px;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+        }
+        .stat-card.pink { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .stat-card.cyan { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .stat-card.green { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .stat-card.orange { background: linear-gradient(135deg, #fa709a, #fee140); }
+        .stat-card.blue { background: linear-gradient(135deg, #30cfd0, #330867); }
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #333;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .btn-submit:hover {
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
+        }
+        .btn-reset {
+            background: linear-gradient(135deg, #f5576c, #f093fb);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        .btn-reset:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+        .entry-item {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .entry-item:hover {
+            background: #f0f0f0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .entry-info {
+            flex: 1;
+            font-size: 13px;
+        }
+        .btn-delete {
+            background: #f5576c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+        .btn-delete:hover {
+            background: #d63447;
+            transform: scale(1.1);
+        }
+        .chat-box {
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 12px;
+            height: 350px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+        .chat-message {
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: 8px;
+            word-wrap: break-word;
+            font-size: 13px;
+        }
+        .chat-message.user {
+            background: #667eea;
+            color: white;
+            margin-left: 15%;
+            text-align: right;
+        }
+        .chat-message.bot {
+            background: #e3f2fd;
+            color: #333;
+            margin-right: 15%;
+        }
+        .chat-input-group {
+            display: flex;
+            gap: 8px;
+        }
+        .chat-input-group input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .chat-input-group button {
+            padding: 10px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .chat-input-group button:hover {
+            background: #5568d3;
+        }
+        .no-data {
+            text-align: center;
+            color: #999;
+            padding: 30px 20px;
+            font-style: italic;
+        }
+        .reset-section {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #ddd;
+        }
+        .loading {
+            color: #999;
+            font-style: italic;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        h3 {
+            color: #555;
+            margin: 15px 0 10px 0;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚓ MARINALOG</h1>
+            <p>Gestione Personale - Ferie, Reperibilità, Guardie e Recupero</p>
+        </div>
+        
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="tab-btn" onclick="switchTab('add')">➕ Aggiungi</button>
+            <button class="tab-btn" onclick="switchTab('history')">📋 Cronologia</button>
+            <button class="tab-btn" onclick="switchTab('assistant')">🤖 IA</button>
+        </div>
+
+        <div class="content">
+            <!-- DASHBOARD -->
+            <div id="dashboard" class="tab-content active">
+                <h2>📊 Statistiche</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Ferie</div>
+                        <div class="stat-value" id="ferie-val">0/39</div>
+                    </div>
+                    <div class="stat-card pink">
+                        <div class="stat-label">Malattia</div>
+                        <div class="stat-value" id="malattia-val">0/4</div>
+                    </div>
+                    <div class="stat-card cyan">
+                        <div class="stat-label">Reperibilità</div>
+                        <div class="stat-value" id="reperibilita-val">0h</div>
+                    </div>
+                    <div class="stat-card green">
+                        <div class="stat-label">Guardie</div>
+                        <div class="stat-value" id="guardia-val">0h</div>
+                    </div>
+                    <div class="stat-card orange">
+                        <div class="stat-label">Recupero</div>
+                        <div class="stat-value" id="recupero-val">0h</div>
+                    </div>
+                    <div class="stat-card blue">
+                        <div class="stat-label">Compensi</div>
+                        <div class="stat-value" id="compensi-val">€0</div>
+                    </div>
+                </div>
+                <h3>📝 Ultime Registrazioni</h3>
+                <div id="latest-entries"></div>
+                <div class="reset-section">
+                    <button class="btn-reset" onclick="resetAllData()">🔄 Resetta Tutto</button>
+                </div>
+            </div>
+
+            <!-- AGGIUNGI -->
+            <div id="add" class="tab-content">
+                <h2>➕ Aggiungi Registrazione</h2>
+                <form onsubmit="addEntry(event)">
+                    <div class="form-group">
+                        <label>📅 Data:</label>
+                        <input type="date" id="entry-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>📌 Tipo:</label>
+                        <select
