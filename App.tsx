@@ -1,23 +1,31 @@
 
 import React, { useState, useEffect } from 'react';
-import { AppState, INITIAL_STATE, LogEntry, CustomField } from './types';
+import { AppState, INITIAL_STATE, LogEntry, CustomField, WorkLogEntry } from './types';
 import Dashboard from './components/Dashboard';
 import ActionPanel from './components/ActionPanel';
 import History from './components/History';
 import Settings from './components/Settings';
 import Assistant from './components/Assistant';
-import { LayoutDashboard, PlusCircle, History as HistoryIcon, Settings as SettingsIcon, MessageSquare, Anchor } from 'lucide-react';
+import WorkLog from './components/WorkLog';
+import { LayoutDashboard, PlusCircle, History as HistoryIcon, Settings as SettingsIcon, MessageSquare, Anchor, Wrench } from 'lucide-react';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(INITIAL_STATE);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'action' | 'history' | 'settings' | 'assistant'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'action' | 'history' | 'settings' | 'assistant' | 'worklog'>('dashboard');
 
   // Load from local storage on mount
   useEffect(() => {
     const saved = localStorage.getItem('marinaLogState');
     if (saved) {
       try {
-        setState(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        // Merge with INITIAL_STATE to ensure new fields like workLogs are present if missing in saved data
+        setState(prev => ({
+            ...INITIAL_STATE,
+            ...parsed,
+            balances: { ...INITIAL_STATE.balances, ...parsed.balances },
+            workLogs: parsed.workLogs || [] // Ensure array exists
+        }));
       } catch (e) {
         console.error("Failed to load state", e);
       }
@@ -176,6 +184,26 @@ const App: React.FC = () => {
       });
   };
 
+  // WORK LOG HANDLERS
+  const handleAddWorkLog = (newLog: Omit<WorkLogEntry, 'id' | 'timestamp'>) => {
+      const entry: WorkLogEntry = {
+          ...newLog,
+          id: `work_${Date.now()}`,
+          timestamp: Date.now()
+      };
+      setState(prev => ({
+          ...prev,
+          workLogs: [entry, ...prev.workLogs]
+      }));
+  };
+
+  const handleDeleteWorkLog = (id: string) => {
+      setState(prev => ({
+          ...prev,
+          workLogs: prev.workLogs.filter(log => log.id !== id)
+      }));
+  };
+
   return (
     <div className="min-h-screen bg-navy-900 text-slate-200 font-sans selection:bg-gold-500 selection:text-navy-900 flex flex-col lg:flex-row overflow-hidden relative">
       
@@ -206,6 +234,7 @@ const App: React.FC = () => {
         <nav className="space-y-2 flex-1">
             <SidebarItem icon={<LayoutDashboard size={20} />} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
             <SidebarItem icon={<PlusCircle size={20} />} label="Nuova Attività" active={activeTab === 'action'} onClick={() => setActiveTab('action')} />
+            <SidebarItem icon={<Wrench size={20} />} label="Giornale Lavori" active={activeTab === 'worklog'} onClick={() => setActiveTab('worklog')} />
             <SidebarItem icon={<HistoryIcon size={20} />} label="Storico" active={activeTab === 'history'} onClick={() => setActiveTab('history')} />
             <SidebarItem icon={<MessageSquare size={20} />} label="Consigliere" active={activeTab === 'assistant'} onClick={() => setActiveTab('assistant')} />
             <SidebarItem icon={<SettingsIcon size={20} />} label="Impostazioni" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
@@ -235,6 +264,7 @@ const App: React.FC = () => {
         <div className="max-w-6xl mx-auto">
             {activeTab === 'dashboard' && <Dashboard state={state} />}
             {activeTab === 'action' && <ActionPanel state={state} onAddEntry={handleAddEntry} />}
+            {activeTab === 'worklog' && <WorkLog state={state} onAddLog={handleAddWorkLog} onDeleteLog={handleDeleteWorkLog} />}
             {activeTab === 'history' && <History state={state} onDelete={handleDeleteEntry} />}
             {activeTab === 'settings' && <Settings state={state} onReset={handleReset} onAddCustomField={handleAddCustomField} onDeleteCustomField={handleDeleteCustomField} />}
             {activeTab === 'assistant' && <Assistant state={state} />}
@@ -244,9 +274,9 @@ const App: React.FC = () => {
       {/* Mobile Bottom Nav */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-700/50 p-2 flex justify-around z-40 pb-safe shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.5)]">
           <MobileNavItem icon={<LayoutDashboard size={20} />} label="Home" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
-          <MobileNavItem icon={<PlusCircle size={20} />} label="Nuovo" active={activeTab === 'action'} onClick={() => setActiveTab('action')} />
+          <MobileNavItem icon={<PlusCircle size={20} />} label="Attività" active={activeTab === 'action'} onClick={() => setActiveTab('action')} />
+          <MobileNavItem icon={<Wrench size={20} />} label="Lavori" active={activeTab === 'worklog'} onClick={() => setActiveTab('worklog')} />
           <MobileNavItem icon={<HistoryIcon size={20} />} label="Storico" active={activeTab === 'history'} onClick={() => setActiveTab('history')} />
-          <MobileNavItem icon={<MessageSquare size={20} />} label="AI" active={activeTab === 'assistant'} onClick={() => setActiveTab('assistant')} />
           <MobileNavItem icon={<SettingsIcon size={20} />} label="Opzioni" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
       </div>
     </div>

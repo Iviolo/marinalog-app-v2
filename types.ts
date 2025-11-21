@@ -32,6 +32,17 @@ export interface LogEntry {
   timestamp: number;
 }
 
+export interface WorkLogEntry {
+  id: string;
+  date: string;
+  boatName: string;
+  workType: 'Manutenzione' | 'Pulizia' | 'Riparazione' | 'Ispezione' | 'Altro';
+  description: string;
+  hours: number;
+  notes?: string;
+  timestamp: number;
+}
+
 export interface AppState {
   balances: {
     ordinaria: number;
@@ -42,6 +53,7 @@ export interface AppState {
     [key: string]: number; // For custom fields balances
   };
   history: LogEntry[];
+  workLogs: WorkLogEntry[];
   customFields: CustomField[];
   user: {
     name: string;
@@ -59,6 +71,7 @@ export const INITIAL_STATE: AppState = {
     moneyBank: 0,
   },
   history: [],
+  workLogs: [],
   customFields: [],
   user: {
     name: "Mario Rossi",
