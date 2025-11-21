@@ -22,8 +22,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state }) => {
   })).reverse();
 
   return (
-    <div className="space-y-6 animate-fade-in pb-20 lg:pb-0">
-      {/* Header Cards */}
+style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1505142468610-359e7d316be0?q=80&w=1200&auto=format&fit=crop"), url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 1200 800%27%3E%3Cdefs%3E%3ClinearGradient id=%27grad%27 x1=%270%25%27 y1=%270%25%27 x2=%270%25%27 y2=%27100%25%27%3E%3Cstop offset=%270%25%27 style=%27stop-color:rgba(0,51,102,0.7);stop-opacity:1%27 /%3E%3Cstop offset=%27100%25%27 style=%27stop-color:rgba(0,102,153,0.5);stop-opacity:1%27 /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%271200%27 height=%27800%27 fill=%27url(%23grad)%27/%3E%3C/svg%3E")', backgroundAttachment: 'fixed', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundSize: 'cover', opacity: 0.95 }} space-y-6 animate-fade-in pb-20 lg:pb-0 bg-cover bg-center bg-attachment-fixed min-h-screen      {/* Header Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         
         <div className="bg-slate-800/50 backdrop-blur-md p-6 rounded-2xl border border-slate-700 shadow-lg relative overflow-hidden group">
