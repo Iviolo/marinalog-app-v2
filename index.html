@@ -1,1 +1,83 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MarinaLog - Gestione Personale</title><style>*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%;width:100%}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;animation:fadeIn 0.6s ease-out}.container{width:100%;max-width:900px;background:rgba(255,255,255,0.95);border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;backdrop-filter:blur(10px);animation:slideUp 0.6s ease-out}.header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 30px;text-align:center;color:white}.header h1{font-size:36px;font-weight:700;margin-bottom:10px;text-shadow:0 2px 4px rgba(0,0,0,0.1)}.header p{font-size:14px;opacity:0.9}.content{padding:30px}.tabs{display:flex;gap:10px;margin-bottom:30px;flex-wrap:wrap}.tab-btn{flex:1;min-width:120px;padding:12px 20px;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.3s ease;background:rgba(102,126,234,0.1);color:#667eea;border:2px solid transparent}.tab-btn:hover{background:rgba(102,126,234,0.2);transform:translateY(-2px)}.tab-btn.active{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;box-shadow:0 4px 12px rgba(102,126,234,0.4)}.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:15px;margin-bottom:30px}.stat-card{background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);padding:20px;border-radius:16px;color:white;text-align:center;box-shadow:0 4px 15px rgba(245,87,108,0.2);transform:translateY(0);transition:all 0.3s ease;animation:popIn 0.5s ease-out backwards}.stat-card:nth-child(1){animation-delay:0.1s;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);box-shadow:0 4px 15px rgba(102,126,234,0.2)}.stat-card:nth-child(2){animation-delay:0.2s;background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);box-shadow:0 4px 15px rgba(245,87,108,0.2)}.stat-card:nth-child(3){animation-delay:0.3s;background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);box-shadow:0 4px 15px rgba(79,172,254,0.2)}.stat-card:nth-child(4){animation-delay:0.4s;background:linear-gradient(135deg,#43e97b 0%,#38f9d7 100%);box-shadow:0 4px 15px rgba(67,233,123,0.2)}.stat-card:hover{transform:translateY(-5px);box-shadow:0 8px 20px rgba(102,126,234,0.4)}.stat-value{font-size:32px;font-weight:700;margin-bottom:5px}.stat-label{font-size:12px;opacity:0.9;font-weight:500}.section-title{font-size:18px;font-weight:700;color:#333;margin-bottom:20px}.entry-form{background:rgba(102,126,234,0.05);padding:25px;border-radius:16px;border:2px solid rgba(102,126,234,0.1)}.form-group{margin-bottom:20px}.form-group label{display:block;font-size:13px;font-weight:600;color:#333;margin-bottom:8px}.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px;border:2px solid rgba(102,126,234,0.2);border-radius:10px;font-size:14px;font-family:inherit;transition:all 0.3s ease;background:white}.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,0.1)}.submit-btn{width:100%;padding:14px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.3s ease;box-shadow:0 4px 15px rgba(102,126,234,0.3)}.submit-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(102,126,234,0.4)}.submit-btn:active{transform:translateY(0)}.entry-list{display:flex;flex-direction:column;gap:12px;max-height:400px;overflow-y:auto}.entry-item{background:linear-gradient(135deg,rgba(102,126,234,0.05),rgba(118,75,162,0.05));padding:15px;border-radius:12px;border-left:4px solid #667eea;display:flex;justify-content:space-between;align-items:center;transition:all 0.3s ease}.entry-item:hover{background:linear-gradient(135deg,rgba(102,126,234,0.1),rgba(118,75,162,0.1));transform:translateX(5px)}.entry-info h3{font-size:14px;font-weight:600;color:#333;margin-bottom:3px}.entry-info p{font-size:12px;color:#999}.delete-btn{background:#f5576c;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.3s ease}.delete-btn:hover{background:#d73c52;transform:scale(1.05)}.empty-state{text-align:center;padding:40px 20px;color:#999}.empty-state p{font-size:14px}@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}@keyframes popIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}@media(max-width:600px){.header h1{font-size:28px}.stats-grid{grid-template-columns:1fr 1fr}.header{padding:30px 20px}.content{padding:20px}}</style></head><body><div class="container"><div class="header"><h1>🎖️ MarinaLog</h1><p>Gestione Personale - Ferie, Reperibilità e Guardie</p></div><div class="content"><div class="tabs"><button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button><button class="tab-btn" onclick="switchTab('form')">Aggiungi Registrazione</button><button class="tab-btn" onclick="switchTab('history')">Cronologia</button></div><div id="dashboard" class="tab-content"><div class="stats-grid"><div class="stat-card"><div class="stat-value" id="ord-val">0</div><div class="stat-label">Ferie Ord. (su 39)</div></div><div class="stat-card"><div class="stat-value" id="sick-val">0</div><div class="stat-label">Malattia (su 4)</div></div><div class="stat-card"><div class="stat-value" id="oncall-val">0</div><div class="stat-label">Reperibilità</div></div><div class="stat-card"><div class="stat-value" id="guard-val">0</div><div class="stat-label">Guardie</div></div></div><div><h3 class="section-title">Compensi Totali: €<span id="total-comp">0</span></h3></div><div><h3 class="section-title">Ultime Registrazioni</h3><div class="entry-list" id="recent-list"><div class="empty-state"><p>Nessuna registrazione ancora</p></div></div></div></div><div id="form" class="tab-content" style="display:none"><div class="entry-form"><form onsubmit="addEntry(event)"><div class="form-group"><label>Data:</label><input type="date" id="entry-date" required value="" /></div><div class="form-group"><label>Tipo Registrazione:</label><select id="entry-type" required><option value="ordinary">Ferie Ordinarie</option><option value="sick">Malattia</option><option value="oncall">Reperibilità (€30)</option><option value="guard">Guardia (€90)</option></select></div><div class="form-group"><label>Note/Dettagli:</label><textarea id="entry-note" rows="3" placeholder="Aggiungi note sulla registrazione..."></textarea></div><button type="submit" class="submit-btn">✓ Registra Voce</button></form></div></div><div id="history" class="tab-content" style="display:none"><div><h3 class="section-title">Tutte le Registrazioni</h3><div class="entry-list" id="history-list"><div class="empty-state"><p>Nessuna registrazione ancora</p></div></div></div></div></div></div><script>const API_KEY='AIzaSyBNCf0dmzdrk3UjQzif6JWaV7jAhle-GM';let entries=JSON.parse(localStorage.getItem('marineLogs')||'[]');function setToday(){document.getElementById('entry-date').valueAsDate=new Date()}function switchTab(tab){document.querySelectorAll('.tab-content').forEach(el=>el.style.display='none');document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));document.getElementById(tab).style.display='block';event.target.classList.add('active');updateDashboard()}function updateDashboard(){const ord=entries.filter(e=>e.type==='ordinary').length;const sick=entries.filter(e=>e.type==='sick').length;const oncall=entries.filter(e=>e.type==='oncall').length;const guard=entries.filter(e=>e.type==='guard').length;const comp=(oncall*30)+(guard*90);document.getElementById('ord-val').textContent=ord;document.getElementById('sick-val').textContent=sick;document.getElementById('oncall-val').textContent=oncall;document.getElementById('guard-val').textContent=guard;document.getElementById('total-comp').textContent=comp;const recent=entries.slice(-5).reverse();document.getElementById('recent-list').innerHTML=recent.length===0?'<div class="empty-state"><p>Nessuna registrazione ancora</p></div>':recent.map(e=>`<div class="entry-item"><div class="entry-info"><h3>${e.date} - ${e.type.toUpperCase()}</h3><p>${e.note||'Nessuna nota'}</p></div></div>`).join('')}function renderHistory(){const hist=entries.slice().reverse();document.getElementById('history-list').innerHTML=hist.length===0?'<div class="empty-state"><p>Nessuna registrazione ancora</p></div>':hist.map((e,i)=>`<div class="entry-item"><div class="entry-info"><h3>${e.date} - ${e.type.toUpperCase()}</h3><p>${e.note||'-'}</p></div><button class="delete-btn" onclick="deleteEntry(${entries.length-1-i})">Elimina</button></div>`).join('')}function addEntry(event){event.preventDefault();const entry={date:document.getElementById('entry-date').value,type:document.getElementById('entry-type').value,note:document.getElementById('entry-note').value};entries.push(entry);localStorage.setItem('marineLogs',JSON.stringify(entries));document.getElementById('entry-date').value='';document.getElementById('entry-type').value='ordinary';document.getElementById('entry-note').value='';switchTab('dashboard')}function deleteEntry(idx){if(confirm('Sei sicuro?')){entries.splice(idx,1);localStorage.setItem('marineLogs',JSON.stringify(entries));renderHistory();updateDashboard()}}setToday();updateDashboard();</script></body></html>
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MarinaLog - Gestione Personale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Montserrat', 'sans-serif'],
+            },
+            colors: {
+              navy: {
+                800: '#1B2A41',
+                900: '#0F172A',
+              },
+              gold: {
+                400: '#FBBF24',
+                500: '#F59E0B',
+                600: '#D97706',
+              }
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-out',
+              'slide-up': 'slideUp 0.5s ease-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #0f172a; /* navy-900 */
+        color: white;
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1e293b;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #475569;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.4.1",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
