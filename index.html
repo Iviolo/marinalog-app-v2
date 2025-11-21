@@ -63,6 +63,65 @@
       ::-webkit-scrollbar-thumb:hover {
         background: #64748b;
       }
+
+      /* --- EFFETTO ONDA --- */
+      .wave-card {
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      
+      .wave-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4); /* Blue glow */
+      }
+
+      /* L'onda vera e propria */
+      .wave-card::after {
+        content: "";
+        position: absolute;
+        bottom: -50%; /* Parte nascosta sotto */
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background-color: rgba(59, 130, 246, 0.1); /* Colore onda tenue */
+        border-radius: 40%;
+        z-index: -1;
+        animation: wave-spin 6s linear infinite;
+        transition: bottom 0.5s ease-out;
+        transform-origin: 50% 48%;
+      }
+
+      .wave-card:hover::after {
+        bottom: -10%; /* Sale su hover */
+        background-color: rgba(59, 130, 246, 0.2); /* Diventa leggermente più visibile */
+      }
+
+      @keyframes wave-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      
+      /* Effetto onda secondario per profondità */
+      .wave-card::before {
+        content: "";
+        position: absolute;
+        bottom: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background-color: rgba(59, 130, 246, 0.15);
+        border-radius: 45%;
+        z-index: -1;
+        animation: wave-spin 9s linear infinite reverse; /* Gira al contrario */
+        transition: bottom 0.7s ease-out;
+      }
+
+      .wave-card:hover::before {
+        bottom: -20%;
+      }
+
     </style>
   <script type="importmap">
 {

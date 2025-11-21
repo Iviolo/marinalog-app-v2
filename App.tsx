@@ -177,17 +177,29 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-navy-900 text-slate-200 font-sans selection:bg-gold-500 selection:text-navy-900 flex flex-col lg:flex-row overflow-hidden">
+    <div className="min-h-screen bg-navy-900 text-slate-200 font-sans selection:bg-gold-500 selection:text-navy-900 flex flex-col lg:flex-row overflow-hidden relative">
       
+      {/* Sfondo Marino con Overlay */}
+      <div className="absolute inset-0 z-0">
+        {/* Immagine Oceano */}
+        <img 
+            src="https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?q=80&w=2073&auto=format&fit=crop" 
+            alt="Ocean Background" 
+            className="w-full h-full object-cover opacity-40"
+        />
+        {/* Overlay Gradiente per scurire e integrare col tema */}
+        <div className="absolute inset-0 bg-gradient-to-br from-navy-900 via-navy-900/90 to-slate-900/80"></div>
+      </div>
+
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-slate-900 border-r border-slate-800 h-screen p-6 fixed z-20">
+      <aside className="hidden lg:flex flex-col w-64 bg-slate-900/80 backdrop-blur-xl border-r border-slate-700/50 h-screen p-6 fixed z-20 shadow-2xl">
         <div className="flex items-center gap-3 mb-10 text-white">
             <div className="p-2 bg-gold-500 rounded-lg text-navy-900 shadow-lg shadow-gold-500/30">
                 <Anchor size={28} />
             </div>
             <div>
                 <h1 className="font-bold text-xl tracking-tight font-display">MARINA<span className="text-gold-500">LOG</span></h1>
-                <p className="text-xs text-slate-500">Gestione Personale</p>
+                <p className="text-xs text-slate-400">Gestione Personale</p>
             </div>
         </div>
         
@@ -199,27 +211,27 @@ const App: React.FC = () => {
             <SidebarItem icon={<SettingsIcon size={20} />} label="Impostazioni" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
         </nav>
 
-        <div className="pt-6 border-t border-slate-800">
+        <div className="pt-6 border-t border-slate-700/50">
             <div className="flex items-center gap-3">
                 <img src={state.user.avatarUrl} alt="User" className="w-10 h-10 rounded-full border-2 border-gold-500" />
                 <div>
                     <p className="text-sm font-bold text-white">{state.user.name}</p>
-                    <p className="text-xs text-slate-500">{state.user.rank}</p>
+                    <p className="text-xs text-slate-400">{state.user.rank}</p>
                 </div>
             </div>
         </div>
       </aside>
 
       {/* Mobile/Tablet Header */}
-      <header className="lg:hidden bg-slate-900/80 backdrop-blur-md border-b border-slate-800 p-4 sticky top-0 z-30 flex justify-between items-center">
+      <header className="lg:hidden bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 p-4 sticky top-0 z-30 flex justify-between items-center shadow-lg">
          <div className="flex items-center gap-2 text-white">
             <Anchor className="text-gold-500" size={24} />
             <h1 className="font-bold text-lg font-display">MARINA<span className="text-gold-500">LOG</span></h1>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 lg:ml-64 p-4 lg:p-8 overflow-y-auto h-screen">
+      {/* Main Content - Added z-10 to sit above background */}
+      <main className="flex-1 lg:ml-64 p-4 lg:p-8 overflow-y-auto h-screen relative z-10">
         <div className="max-w-6xl mx-auto">
             {activeTab === 'dashboard' && <Dashboard state={state} />}
             {activeTab === 'action' && <ActionPanel state={state} onAddEntry={handleAddEntry} />}
@@ -230,7 +242,7 @@ const App: React.FC = () => {
       </main>
 
       {/* Mobile Bottom Nav */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800 p-2 flex justify-around z-40 pb-safe">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-700/50 p-2 flex justify-around z-40 pb-safe shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.5)]">
           <MobileNavItem icon={<LayoutDashboard size={20} />} label="Home" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
           <MobileNavItem icon={<PlusCircle size={20} />} label="Nuovo" active={activeTab === 'action'} onClick={() => setActiveTab('action')} />
           <MobileNavItem icon={<HistoryIcon size={20} />} label="Storico" active={activeTab === 'history'} onClick={() => setActiveTab('history')} />
@@ -244,10 +256,10 @@ const App: React.FC = () => {
 const SidebarItem = ({ icon, label, active, onClick }: any) => (
     <button 
         onClick={onClick}
-        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative overflow-hidden ${
             active 
             ? 'bg-gold-500 text-navy-900 font-bold shadow-lg shadow-gold-500/20' 
-            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+            : 'text-slate-400 hover:bg-white/5 hover:text-white'
         }`}
     >
         {icon}
