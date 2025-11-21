@@ -1,0 +1,5 @@
+{
+  "name": "MarinaLog - Gestione Personale",
+  "description": "Web app avanzata per la gestione di ferie, guardie, permessi e recuperi per il personale della Marina Militare Italiana.",
+  "requestFramePermissions": []
+}
