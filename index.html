@@ -1,1 +1,83 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MarinaLog</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#667eea,#764ba2,#f093fb);min-height:100vh;padding:10px}.container{max-width:900px;margin:0 auto;background:rgba(255,255,255,.97);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.3)}.header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:30px;text-align:center}.header h1{font-size:32px;margin-bottom:10px}.tabs{display:flex;gap:5px;padding:15px;background:#f5f5f5;overflow-x:auto;flex-wrap:wrap}.tab-btn{padding:10px 16px;border:2px solid transparent;background:#fff;color:#667eea;border-radius:10px;cursor:pointer;font-weight:bold;transition:all .3s}.tab-btn.active{background:#667eea;color:#fff;box-shadow:0 4px 15px rgba(102,126,234,.4)}.content{padding:20px}.tab-content{display:none}.tab-content.active{display:block}.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:20px}.stat-card{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:20px;border-radius:15px;text-align:center;box-shadow:0 8px 20px rgba(102,126,234,.3)}.stat-card.pink{background:linear-gradient(135deg,#f093fb,#f5576c)}.stat-card.cyan{background:linear-gradient(135deg,#4facfe,#00f2fe)}.stat-card.green{background:linear-gradient(135deg,#43e97b,#38f9d7)}.stat-card.orange{background:linear-gradient(135deg,#fa709a,#fee140)}.stat-card.blue{background:linear-gradient(135deg,#30cfd0,#330867)}.stat-value{font-size:26px;font-weight:bold}.form-group{margin:15px 0}.form-group label{display:block;font-weight:bold;margin-bottom:6px;color:#333;font-size:14px}.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px}.btn-submit{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:12px;border:0;border-radius:10px;font-weight:bold;cursor:pointer;width:100%;font-size:16px}.btn-reset{background:linear-gradient(135deg,#f5576c,#f093fb);color:#fff;padding:10px 20px;border:0;border-radius:8px;font-weight:bold;cursor:pointer}.btn-delete{background:#f5576c;color:#fff;border:0;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px}.entry-item{background:#f9f9f9;padding:12px;border-radius:10px;margin-bottom:8px;border-left:4px solid #667eea;display:flex;justify-content:space-between;align-items:center}.chat-box{background:#f5f5f5;border:2px solid #ddd;border-radius:10px;padding:12px;height:350px;overflow-y:auto;margin-bottom:12px}.chat-message{margin:8px 0;padding:10px;border-radius:8px;font-size:13px}.chat-message.user{background:#667eea;color:#fff;margin-left:15%;text-align:right}.chat-message.bot{background:#e3f2fd;color:#333;margin-right:15%}.chat-input-group{display:flex;gap:8px}.chat-input-group input{flex:1;padding:10px;border:2px solid #ddd;border-radius:8px}.chat-input-group button{padding:10px 16px;background:#667eea;color:#fff;border:0;border-radius:8px;cursor:pointer;font-weight:bold}h2{color:#333;margin-bottom:15px;font-size:20px}h3{color:#555;margin:15px 0 10px 0}</style></head><body><div class="container"><div class="header"><h1>⚠ MARINALOG</h1><p>Gestione Personale - Ferie, Reperibilità, Guardie e Recupero</p></div><div class="tabs"><button class="tab-btn active" onclick="show('dashboard')">📊 Dashboard</button><button class="tab-btn" onclick="show('add')">➕ Aggiungi</button><button class="tab-btn" onclick="show('history')">📋 Cronologia</button><button class="tab-btn" onclick="show('assistant')">🤖 IA</button></div><div class="content"><div id="dashboard" class="tab-content active"><h2>📊 Statistiche</h2><div class="stats-grid"><div class="stat-card"><small>Ferie</small><div class="stat-value" id="ferie">0/39</div></div><div class="stat-card pink"><small>Malattia</small><div class="stat-value" id="malattia">0/4</div></div><div class="stat-card cyan"><small>Reperibilità</small><div class="stat-value" id="reperibilita">0h</div></div><div class="stat-card green"><small>Guardie</small><div class="stat-value" id="guardia">0h</div></div><div class="stat-card orange"><small>Recupero</small><div class="stat-value" id="recupero">0h</div></div><div class="stat-card blue"><small>Compensi</small><div class="stat-value" id="compensi">€0</div></div></div><h3>📝 Ultime</h3><div id="latest"></div><div style="text-align:center;margin-top:20px;padding-top:15px;border-top:2px solid #ddd"><button class="btn-reset" onclick="reset()">🔄 Resetta</button></div></div><div id="add" class="tab-content"><h2>➕ Aggiungi</h2><form onsubmit="add(event)"><div class="form-group"><label>📅 Data</label><input type="date" id="data" required></div><div class="form-group"><label>📌 Tipo</label><select id="tipo" required><option>Ferie Ordinarie</option><option>Malattia</option><option>Reperibilità</option><option>Guardia</option><option>Recupero</option></select></div><div class="form-group"><label>⏱ Ore</label><input type="number" id="ore" min="0" step="0.5"></div><div class="form-group"><label>💬 Note</label><textarea id="note" rows="3"></textarea></div><button type="submit" class="btn-submit">✓ Registra</button></form></div><div id="history" class="tab-content"><h2>📋 Cronologia</h2><div id="hist"></div></div><div id="assistant" class="tab-content"><h2>🤖 Assistente IA</h2><div class="chat-box" id="chat"></div><div class="chat-input-group"><input type="text" id="msg" placeholder="Chiedi..."><button type="button" onclick="send()">Invia</button></div></div></div></div><script>const API='AIzaSyBNCf0dmzdrk3UjQzif6JWaV7jAhle-GM';let d=JSON.parse(localStorage.getItem('ml'))||[];function show(t){document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active'));document.getElementById(t).classList.add('active');event.target.classList.add('active')}function add(e){e.preventDefault();d.push({data:document.getElementById('data').value,tipo:document.getElementById('tipo').value,ore:parseFloat(document.getElementById('ore').value)||0,note:document.getElementById('note').value});localStorage.setItem('ml',JSON.stringify(d));upd();alert('✓ Aggiunto');document.getElementById('data').value='';document.getElementById('ore').value='';document.getElementById('note').value=''}function upd(){let f=d.filter(e=>e.tipo==='Ferie Ordinarie').length,m=d.filter(e=>e.tipo==='Malattia').length,r=d.filter(e=>e.tipo==='Reperibilità').reduce((a,e)=>a+e.ore,0),g=d.filter(e=>e.tipo==='Guardia').reduce((a,e)=>a+e.ore,0),c=d.filter(e=>e.tipo==='Recupero').reduce((a,e)=>a+e.ore,0),comp=(r*30)+(g*90);document.getElementById('ferie').textContent=f+'/39';document.getElementById('malattia').textContent=m+'/4';document.getElementById('reperibilita').textContent=r.toFixed(1)+'h';document.getElementById('guardia').textContent=g.toFixed(1)+'h';document.getElementById('recupero').textContent=c.toFixed(1)+'h';document.getElementById('compensi').textContent='€'+comp.toFixed(2);let h='';d.slice(-5).reverse().forEach((e,i)=>{h+=`<div class="entry-item"><div><strong>${e.data}</strong> - ${e.tipo} ${e.ore?'('+e.ore+'h)':''}</div><button type="button" class="btn-delete" onclick="del(${d.length-1-i})">❌</button></div>`});document.getElementById('latest').innerHTML=h||'<div style="text-align:center;color:#999;padding:20px">Nessuna</div>';let hs='';d.forEach((e,i)=>{hs+=`<div class="entry-item"><div><strong>${e.data}</strong> - ${e.tipo} ${e.ore?'('+e.ore+'h)':''}</div><button type="button" class="btn-delete" onclick="del(${i})">❌</button></div>`});document.getElementById('hist').innerHTML=hs||'<div style="text-align:center;color:#999;padding:20px">Nessuna</div>'}function del(i){if(confirm('Elimina?')){d.splice(i,1);localStorage.setItem('ml',JSON.stringify(d));upd()}}function reset(){if(confirm('Resettare tutto?')){d=[];localStorage.setItem('ml','[]');upd()}}async function send(){let m=document.getElementById('msg').value.trim();if(!m)return;const b=document.getElementById('chat'),u=document.createElement('div');u.className='chat-message user';u.textContent=m;b.appendChild(u);document.getElementById('msg').value='';const bo=document.createElement('div');bo.className='chat-message bot';bo.textContent='...';b.appendChild(bo);try{const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:`Sei assistente Marina. Ferie: ${d.filter(e=>e.tipo==='Ferie Ordinarie').length}/39, Malattia: ${d.filter(e=>e.tipo==='Malattia').length}/4, Reperibilità: ${d.filter(e=>e.tipo==='Reperibilità').reduce((a,e)=>a+e.ore,0)}h, Guardia: ${d.filter(e=>e.tipo==='Guardia').reduce((a,e)=>a+e.ore,0)}h, Recupero: ${d.filter(e=>e.tipo==='Recupero').reduce((a,e)=>a+e.ore,0)}h. Domanda: ${m}`}]}})});const dt=await r.json();bo.textContent=dt.candidates?.[0]?.content?.parts?.[0]?.text||'Errore'}catch(e){bo.textContent='Errore: '+e.message}b.scrollTop=b.scrollHeight}document.getElementById('data').value=new Date().toISOString().split('T')[0];upd()</script></body></html>
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MarinaLog - Gestione Personale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Montserrat', 'sans-serif'],
+            },
+            colors: {
+              navy: {
+                800: '#1B2A41',
+                900: '#0F172A',
+              },
+              gold: {
+                400: '#FBBF24',
+                500: '#F59E0B',
+                600: '#D97706',
+              }
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-out',
+              'slide-up': 'slideUp 0.5s ease-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #0f172a; /* navy-900 */
+        color: white;
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1e293b;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #475569;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.4.1",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

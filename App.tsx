@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AppState, INITIAL_STATE, LogEntry, CustomField } from './types';
 import Dashboard from './components/Dashboard';
@@ -59,6 +60,13 @@ const App: React.FC = () => {
         case 'permesso':
           newBalances.hoursBank -= entry.quantity; // Subtract hours
           break;
+        case 'rettifica':
+           if (entry.targetBalance) {
+               // Add quantity directly (can be negative if subtraction was selected)
+               const current = newBalances[entry.targetBalance] || 0;
+               newBalances[entry.targetBalance] = current + entry.quantity;
+           }
+           break;
         case 'custom':
           if (entry.customFieldId) {
              const field = prev.customFields.find(f => f.id === entry.customFieldId);
@@ -111,6 +119,13 @@ const App: React.FC = () => {
         case 'permesso':
           newBalances.hoursBank += entry.quantity;
           break;
+        case 'rettifica':
+           if (entry.targetBalance) {
+               // Reverse the operation
+               const current = newBalances[entry.targetBalance] || 0;
+               newBalances[entry.targetBalance] = current - entry.quantity;
+           }
+           break;
         case 'custom':
            if (entry.customFieldId) {
              const field = prev.customFields.find(f => f.id === entry.customFieldId);

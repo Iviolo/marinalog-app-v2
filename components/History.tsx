@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { AppState, LogEntry } from '../types';
 import { Trash2, FileText } from 'lucide-react';
@@ -8,6 +9,23 @@ interface HistoryProps {
 }
 
 const History: React.FC<HistoryProps> = ({ state, onDelete }) => {
+
+  const getBalanceLabel = (key: string) => {
+      if (key === 'ordinaria') return 'Licenza Ordinaria';
+      if (key === 'legge937') return 'Legge 937';
+      if (key === 'malattia') return 'Malattia';
+      if (key === 'hoursBank') return 'Banca Ore';
+      if (key === 'moneyBank') return 'Compensi';
+      const custom = state.customFields.find(f => f.id === key);
+      return custom ? custom.name : key;
+  };
+
+  const getBalanceUnit = (key: string) => {
+      if (key === 'moneyBank') return '€';
+      if (key === 'hoursBank') return 'h';
+      return ''; // Default days usually implied
+  };
+
   return (
     <div className="bg-slate-800/50 backdrop-blur-md p-6 rounded-2xl border border-slate-700 shadow-lg pb-24 lg:pb-6">
       <h2 className="text-xl font-bold text-white mb-6">Storico Movimenti</h2>
@@ -24,6 +42,7 @@ const History: React.FC<HistoryProps> = ({ state, onDelete }) => {
                     ${entry.type === 'ordinaria' ? 'bg-blue-500/20 text-blue-400' :
                       entry.type === 'guardia' ? 'bg-purple-500/20 text-purple-400' :
                       entry.type === 'malattia' ? 'bg-red-500/20 text-red-400' :
+                      entry.type === 'rettifica' ? 'bg-pink-500/20 text-pink-400' :
                       'bg-slate-500/20 text-slate-400'
                     }`}>
                     {entry.type}
@@ -34,6 +53,8 @@ const History: React.FC<HistoryProps> = ({ state, onDelete }) => {
                     {entry.type === 'permesso' ? `Permesso orario (${entry.quantity.toFixed(1)}h)` : 
                      entry.type === 'guardia' ? `Guardia (+${entry.quantity}h / +${entry.moneyAccrued}€)` :
                      entry.type === 'recupero' ? `Recupero (-${entry.quantity}h)` :
+                     entry.type === 'rettifica' && entry.targetBalance ? 
+                        `Rettifica ${getBalanceLabel(entry.targetBalance)}: ${entry.quantity > 0 ? '+' : ''}${entry.quantity}${getBalanceUnit(entry.targetBalance)}` :
                      `${entry.quantity} Giorno`}
                 </div>
                 {entry.notes && (

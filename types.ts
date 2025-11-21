@@ -1,3 +1,4 @@
+
 export type LogType = 
   | 'ordinaria' 
   | 'legge937' 
@@ -5,7 +6,8 @@ export type LogType =
   | 'guardia' 
   | 'recupero' 
   | 'permesso' 
-  | 'custom';
+  | 'custom'
+  | 'rettifica';
 
 export interface CustomField {
   id: string;
@@ -21,6 +23,7 @@ export interface LogEntry {
   date: string; // ISO string YYYY-MM-DD
   type: LogType;
   customFieldId?: string; // If type is custom
+  targetBalance?: string; // If type is rettifica, keys of balances
   quantity: number; // days or hours
   moneyAccrued: number; // specifically for Guardie
   startTime?: string; // HH:mm for permits
