@@ -1,16 +1,18 @@
 
 import React, { useState, useMemo } from 'react';
 import { AppState, WorkLogEntry } from '../types';
-import { Wrench, Anchor, Trash2, Filter, Calendar, Clock, Ship, PenTool, Plus, Search } from 'lucide-react';
+import { Wrench, Anchor, Trash2, Filter, Calendar, Clock, Ship, PenTool, Plus, Search, Save, X, Edit2 } from 'lucide-react';
 
 interface WorkLogProps {
   state: AppState;
   onAddLog: (entry: Omit<WorkLogEntry, 'id' | 'timestamp'>) => void;
+  onUpdateLog: (entry: WorkLogEntry) => void;
   onDeleteLog: (id: string) => void;
 }
 
-const WorkLog: React.FC<WorkLogProps> = ({ state, onAddLog, onDeleteLog }) => {
+const WorkLog: React.FC<WorkLogProps> = ({ state, onAddLog, onUpdateLog, onDeleteLog }) => {
   // Form State
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [boatName, setBoatName] = useState('');
   const [workType, setWorkType] = useState<WorkLogEntry['workType']>('Manutenzione');
@@ -26,25 +28,81 @@ const WorkLog: React.FC<WorkLogProps> = ({ state, onAddLog, onDeleteLog }) => {
 
   const workTypes = ['Manutenzione', 'Pulizia', 'Riparazione', 'Ispezione', 'Altro'];
 
+  const resetForm = () => {
+    setEditingId(null);
+    setDate(new Date().toISOString().split('T')[0]);
+    setBoatName('');
+    setWorkType('Manutenzione');
+    setDescription('');
+    setHours(0);
+    setNotes('');
+  };
+
+  const handleEditClick = (log: WorkLogEntry) => {
+    setEditingId(log.id);
+    setDate(log.date);
+    setBoatName(log.boatName);
+    setWorkType(log.workType);
+    setDescription(log.description);
+    setHours(log.hours);
+    setNotes(log.notes || '');
+    
+    // Scroll to form top logic could go here
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAddLog({
-      date,
-      boatName,
-      workType,
-      description,
-      hours,
-      notes
-    });
-    // Reset relevant fields
-    setDescription('');
-    setNotes('');
-    setHours(0);
-    // Keep Boat Name and Date as they might be repetitive
+    
+    // Validation
+    if (!boatName || !description || !date) {
+        alert("Compila tutti i campi obbligatori.");
+        return;
+    }
+
+    if (editingId) {
+        // Update existing log
+        onUpdateLog({
+            id: editingId,
+            date,
+            boatName,
+            workType,
+            description,
+            hours,
+            notes,
+            timestamp: Date.now() // Update timestamp to show modification time if needed
+        });
+    } else {
+        // Add new log
+        onAddLog({
+            date,
+            boatName,
+            workType,
+            description,
+            hours,
+            notes
+        });
+    }
+
+    // Soft reset: keep date and boat name if adding multiple, but full reset if editing finished
+    if (editingId) {
+        resetForm();
+    } else {
+        setDescription('');
+        setNotes('');
+        setHours(0);
+    }
+  };
+
+  const handleDeleteClick = (id: string) => {
+    if (window.confirm("Sei sicuro di voler eliminare definitivamente questo report di lavoro?")) {
+        onDeleteLog(id);
+        if (editingId === id) resetForm();
+    }
   };
 
   const filteredLogs = useMemo(() => {
-    return state.workLogs.filter(log => {
+    return (state.workLogs || []).filter(log => {
       const matchesBoat = filterBoat === '' || log.boatName.toLowerCase().includes(filterBoat.toLowerCase());
       const matchesType = filterType === '' || log.workType === filterType;
       const matchesDateStart = filterDateStart === '' || log.date >= filterDateStart;
@@ -71,11 +129,19 @@ const WorkLog: React.FC<WorkLogProps> = ({ state, onAddLog, onDeleteLog }) => {
         
         {/* Left Column: Form */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-slate-800/60 backdrop-blur-md p-6 rounded-2xl border border-slate-700 shadow-xl">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <Plus className="text-gold-500" size={20}/>
-              Nuovo Lavoro
-            </h3>
+          <div className={`bg-slate-800/60 backdrop-blur-md p-6 rounded-2xl border shadow-xl transition-colors duration-300 ${editingId ? 'border-emerald-500/50 bg-emerald-900/10' : 'border-slate-700'}`}>
+            <div className="flex justify-between items-center mb-4">
+                <h3 className={`text-lg font-bold flex items-center gap-2 ${editingId ? 'text-emerald-400' : 'text-white'}`}>
+                  {editingId ? <Edit2 size={20}/> : <Plus className="text-gold-500" size={20}/>}
+                  {editingId ? 'Modifica Lavoro' : 'Nuovo Lavoro'}
+                </h3>
+                {editingId && (
+                    <button type="button" onClick={resetForm} className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded flex items-center gap-1">
+                        <X size={12}/> Annulla
+                    </button>
+                )}
+            </div>
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               
               <div className="space-y-1">
@@ -137,9 +203,13 @@ const WorkLog: React.FC<WorkLogProps> = ({ state, onAddLog, onDeleteLog }) => {
 
               <button 
                 type="submit"
-                className="w-full bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold py-3 rounded-xl shadow-lg shadow-gold-500/20 transition-all transform active:scale-95 mt-2"
+                className={`w-full font-bold py-3 rounded-xl shadow-lg transition-all transform active:scale-95 mt-2 flex items-center justify-center gap-2 ${
+                    editingId 
+                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/20' 
+                    : 'bg-gold-500 hover:bg-gold-600 text-navy-900 shadow-gold-500/20'
+                }`}
               >
-                Aggiungi Lavoro
+                {editingId ? <><Save size={18}/> Salva Modifiche</> : <><Plus size={18}/> Aggiungi Lavoro</>}
               </button>
             </form>
           </div>
@@ -192,11 +262,15 @@ const WorkLog: React.FC<WorkLogProps> = ({ state, onAddLog, onDeleteLog }) => {
                filteredLogs.map((log) => (
                  <div key={log.id} className="relative pl-8 group">
                     {/* Dot */}
-                    <div className="absolute left-[10px] top-6 w-4 h-4 rounded-full bg-gold-500 border-4 border-slate-900 shadow-lg z-10 group-hover:scale-125 transition-transform"></div>
+                    <div className={`absolute left-[10px] top-6 w-4 h-4 rounded-full border-4 border-slate-900 shadow-lg z-10 transition-transform group-hover:scale-125 ${
+                        log.id === editingId ? 'bg-emerald-500 animate-pulse' : 'bg-gold-500'
+                    }`}></div>
                     
                     {/* Card */}
-                    <div className="wave-card bg-slate-800/80 backdrop-blur p-5 rounded-xl border border-slate-700 shadow-lg hover:border-blue-500/50 transition-all">
-                       <div className="flex justify-between items-start mb-3">
+                    <div className={`wave-card bg-slate-800/80 backdrop-blur p-5 rounded-xl border shadow-lg hover:border-blue-500/50 transition-all ${
+                        log.id === editingId ? 'border-emerald-500 ring-1 ring-emerald-500/50' : 'border-slate-700'
+                    }`}>
+                       <div className="flex justify-between items-start mb-3 relative z-20">
                           <div className="flex items-center gap-3">
                              <div className={`p-2 rounded-lg ${
                                log.workType === 'Manutenzione' ? 'bg-blue-500/20 text-blue-400' :
@@ -213,26 +287,36 @@ const WorkLog: React.FC<WorkLogProps> = ({ state, onAddLog, onDeleteLog }) => {
                                 </span>
                              </div>
                           </div>
-                          <button 
-                            onClick={() => {
-                                if(window.confirm("Eliminare questo report?")) onDeleteLog(log.id);
-                            }}
-                            className="text-slate-600 hover:text-red-500 p-2 rounded-full hover:bg-slate-700/50 transition-colors"
-                          >
-                             <Trash2 size={18} />
-                          </button>
+                          <div className="flex gap-2">
+                             <button 
+                               type="button"
+                               onClick={(e) => { e.stopPropagation(); handleEditClick(log); }}
+                               className="text-slate-400 hover:text-emerald-400 p-2 rounded-full hover:bg-slate-700/50 transition-colors cursor-pointer"
+                               title="Modifica"
+                             >
+                                <Edit2 size={18} />
+                             </button>
+                             <button 
+                               type="button"
+                               onClick={(e) => { e.stopPropagation(); handleDeleteClick(log.id); }}
+                               className="text-slate-400 hover:text-red-500 p-2 rounded-full hover:bg-slate-700/50 transition-colors cursor-pointer"
+                               title="Elimina"
+                             >
+                                <Trash2 size={18} />
+                             </button>
+                          </div>
                        </div>
 
-                       <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-700/50 mb-3">
+                       <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-700/50 mb-3 relative z-10">
                           <div className="flex justify-between text-xs font-bold uppercase text-slate-500 mb-1">
                              <span>{log.workType}</span>
                              <span className="flex items-center gap-1 text-gold-500"><Clock size={12}/> {log.hours}h</span>
                           </div>
-                          <p className="text-slate-200 text-sm leading-relaxed">{log.description}</p>
+                          <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{log.description}</p>
                        </div>
 
                        {log.notes && (
-                         <div className="flex items-start gap-2 text-xs text-slate-400 italic bg-slate-800/50 p-2 rounded border border-slate-700/30">
+                         <div className="flex items-start gap-2 text-xs text-slate-400 italic bg-slate-800/50 p-2 rounded border border-slate-700/30 relative z-10">
                             <PenTool size={12} className="mt-0.5"/>
                             {log.notes}
                          </div>

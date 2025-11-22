@@ -24,7 +24,7 @@ const App: React.FC = () => {
             ...INITIAL_STATE,
             ...parsed,
             balances: { ...INITIAL_STATE.balances, ...parsed.balances },
-            workLogs: parsed.workLogs || [] // Ensure array exists
+            workLogs: Array.isArray(parsed.workLogs) ? parsed.workLogs : [] // Ensure array exists and is array
         }));
       } catch (e) {
         console.error("Failed to load state", e);
@@ -188,19 +188,27 @@ const App: React.FC = () => {
   const handleAddWorkLog = (newLog: Omit<WorkLogEntry, 'id' | 'timestamp'>) => {
       const entry: WorkLogEntry = {
           ...newLog,
-          id: `work_${Date.now()}`,
+          // Use a more unique ID to prevent collision and ensure string type
+          id: `work_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           timestamp: Date.now()
       };
       setState(prev => ({
           ...prev,
-          workLogs: [entry, ...prev.workLogs]
+          workLogs: [entry, ...(prev.workLogs || [])]
+      }));
+  };
+
+  const handleUpdateWorkLog = (updatedLog: WorkLogEntry) => {
+      setState(prev => ({
+          ...prev,
+          workLogs: (prev.workLogs || []).map(log => log.id === updatedLog.id ? updatedLog : log)
       }));
   };
 
   const handleDeleteWorkLog = (id: string) => {
       setState(prev => ({
           ...prev,
-          workLogs: prev.workLogs.filter(log => log.id !== id)
+          workLogs: (prev.workLogs || []).filter(log => log.id !== id)
       }));
   };
 
@@ -264,7 +272,7 @@ const App: React.FC = () => {
         <div className="max-w-6xl mx-auto">
             {activeTab === 'dashboard' && <Dashboard state={state} />}
             {activeTab === 'action' && <ActionPanel state={state} onAddEntry={handleAddEntry} />}
-            {activeTab === 'worklog' && <WorkLog state={state} onAddLog={handleAddWorkLog} onDeleteLog={handleDeleteWorkLog} />}
+            {activeTab === 'worklog' && <WorkLog state={state} onAddLog={handleAddWorkLog} onUpdateLog={handleUpdateWorkLog} onDeleteLog={handleDeleteWorkLog} />}
             {activeTab === 'history' && <History state={state} onDelete={handleDeleteEntry} />}
             {activeTab === 'settings' && <Settings state={state} onReset={handleReset} onAddCustomField={handleAddCustomField} onDeleteCustomField={handleDeleteCustomField} />}
             {activeTab === 'assistant' && <Assistant state={state} />}
