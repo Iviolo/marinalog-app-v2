@@ -24,7 +24,8 @@ const App: React.FC = () => {
             ...INITIAL_STATE,
             ...parsed,
             balances: { ...INITIAL_STATE.balances, ...parsed.balances },
-            workLogs: Array.isArray(parsed.workLogs) ? parsed.workLogs : [] // Ensure array exists and is array
+            workLogs: Array.isArray(parsed.workLogs) ? parsed.workLogs : [], // Ensure array exists and is array
+            user: INITIAL_STATE.user // Force user update to apply name change
         }));
       } catch (e) {
         console.error("Failed to load state", e);

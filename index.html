@@ -1,8 +1,15 @@
+
 <!DOCTYPE html>
 <html lang="it">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <!-- iOS PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MarinaLog">
+
     <title>MarinaLog - Gestione Personale</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
@@ -91,6 +98,7 @@
         animation: wave-spin 6s linear infinite;
         transition: bottom 0.5s ease-out;
         transform-origin: 50% 48%;
+        pointer-events: none; /* FIX: allow clicks to pass through */
       }
 
       .wave-card:hover::after {
@@ -116,6 +124,7 @@
         z-index: -1;
         animation: wave-spin 9s linear infinite reverse; /* Gira al contrario */
         transition: bottom 0.7s ease-out;
+        pointer-events: none; /* FIX: allow clicks to pass through */
       }
 
       .wave-card:hover::before {
@@ -140,3 +149,4 @@
     <div id="root"></div>
   </body>
 </html>
+    

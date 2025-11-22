@@ -270,7 +270,7 @@ const WorkLog: React.FC<WorkLogProps> = ({ state, onAddLog, onUpdateLog, onDelet
                     <div className={`wave-card bg-slate-800/80 backdrop-blur p-5 rounded-xl border shadow-lg hover:border-blue-500/50 transition-all ${
                         log.id === editingId ? 'border-emerald-500 ring-1 ring-emerald-500/50' : 'border-slate-700'
                     }`}>
-                       <div className="flex justify-between items-start mb-3 relative z-20">
+                       <div className="flex justify-between items-start mb-3 relative z-30">
                           <div className="flex items-center gap-3">
                              <div className={`p-2 rounded-lg ${
                                log.workType === 'Manutenzione' ? 'bg-blue-500/20 text-blue-400' :

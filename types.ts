@@ -74,7 +74,7 @@ export const INITIAL_STATE: AppState = {
   workLogs: [],
   customFields: [],
   user: {
-    name: "Mario Rossi",
+    name: "Ivio Ceras",
     rank: "Capo di 1ª Classe",
     avatarUrl: "https://picsum.photos/200",
   }
