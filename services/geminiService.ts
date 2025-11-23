@@ -1,4 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
 import { AppState } from "../types";
 
 export const askMilitaryAdvisor = async (
@@ -9,9 +8,8 @@ export const askMilitaryAdvisor = async (
   if (!apiKey) {
     return "Errore: Chiave API non fornita. Inseriscila per attivare l'assistente.";
   }
-  
-  const ai = new GoogleGenAI({ apiKey });
 
+  // Costruzione del contesto e istruzioni di sistema
   const systemInstruction = `
     Sei un assistente virtuale esperto di logistica e regolamenti della Marina Militare Italiana.
     Hai accesso ai dati attuali dell'utente (ferie, permessi, guardie).
@@ -35,17 +33,69 @@ export const askMilitaryAdvisor = async (
     Se l'utente chiede calcoli complessi, spiegali passo passo.
   `;
 
+  // Endpoint REST API come richiesto (gemini-1.5-flash)
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+  const requestBody = {
+    contents: [
+      {
+        parts: [
+          { text: query }
+        ]
+      }
+    ],
+    systemInstruction: {
+      parts: [
+        { text: systemInstruction }
+      ]
+    }
+  };
+
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: query,
-      config: {
-        systemInstruction: systemInstruction,
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
       },
+      body: JSON.stringify(requestBody)
     });
-    return response.text || "Non ho ricevuto una risposta valida.";
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("Gemini API Error:", response.status, errorData);
+
+      if (response.status === 400) {
+        return "Errore 400: Richiesta malformata. Verifica che l'API Key sia corretta e attiva (Key invalida).";
+      }
+      if (response.status === 401) {
+        return "Errore 401: Non autorizzato. La chiave API non è valida.";
+      }
+      if (response.status === 403) {
+        return "Errore 403: Accesso negato. La tua chiave potrebbe non avere i permessi o il credito necessario.";
+      }
+      if (response.status === 429) {
+        return "Errore 429: Troppe richieste. Riprova tra qualche istante.";
+      }
+      if (response.status >= 500) {
+        return "Errore Server Google (5xx). Riprova più tardi.";
+      }
+      
+      return `Errore API (${response.status}): ${errorData.error?.message || 'Errore sconosciuto'}`;
+    }
+
+    const data = await response.json();
+    
+    // Estrazione testo dalla risposta
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (text) {
+      return text;
+    } else {
+      return "Il modello ha generato una risposta vuota.";
+    }
+
   } catch (error) {
-    console.error("Gemini Error:", error);
-    return "Si è verificato un errore di comunicazione. Verifica che la tua API Key sia valida e abbia credito sufficiente.";
+    console.error("Network Error:", error);
+    return "Errore di connessione. Verifica di essere collegato a internet.";
   }
 };
