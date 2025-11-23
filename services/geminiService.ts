@@ -1,20 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 import { AppState } from "../types";
 
-const getAiClient = () => {
-  if (!"AIzaSyBNCf0dmzdrk3UjQzif6JWaV7jAhle-GM") {
-    console.warn("API Key not found in environment variables.");
-    return null;
-  }
-  return new GoogleGenAI({ apiKey: "AIzaSyBNCf0dmzdrk3UjQzif6JWaV7jAhle-GM" });
-};
-
 export const askMilitaryAdvisor = async (
   query: string,
-  state: AppState
+  state: AppState,
+  apiKey: string
 ): Promise<string> => {
-  const ai = getAiClient();
-  if (!ai) return "Errore: Chiave API non configurata. Impossibile contattare l'assistente.";
+  if (!apiKey) {
+    return "Errore: Chiave API non fornita. Inseriscila per attivare l'assistente.";
+  }
+  
+  const ai = new GoogleGenAI({ apiKey });
 
   const systemInstruction = `
     Sei un assistente virtuale esperto di logistica e regolamenti della Marina Militare Italiana.
@@ -36,6 +32,7 @@ export const askMilitaryAdvisor = async (
     
     Rispondi in modo formale ma cordiale, tipico dell'ambiente militare ("Comandi", "Affermativo").
     Sii conciso e diretto. Usa la formattazione Markdown per le liste.
+    Se l'utente chiede calcoli complessi, spiegali passo passo.
   `;
 
   try {
@@ -49,6 +46,6 @@ export const askMilitaryAdvisor = async (
     return response.text || "Non ho ricevuto una risposta valida.";
   } catch (error) {
     console.error("Gemini Error:", error);
-    return "Si è verificato un errore di comunicazione con il comando centrale (API Error).";
+    return "Si è verificato un errore di comunicazione. Verifica che la tua API Key sia valida e abbia credito sufficiente.";
   }
 };

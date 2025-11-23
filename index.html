@@ -3,18 +3,159 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
+    
     <!-- iOS PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="MarinaLog">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
 
     <title>MarinaLog - Gestione Personale</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
-  </head>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Montserrat', 'sans-serif'],
+            },
+            colors: {
+              navy: {
+                800: '#1B2A41',
+                900: '#0F172A',
+              },
+              gold: {
+                400: '#FBBF24',
+                500: '#F59E0B',
+                600: '#D97706',
+              }
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-out',
+              'slide-up': 'slideUp 0.5s ease-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #0f172a; /* navy-900 */
+        color: white;
+        overscroll-behavior-y: none; /* Prevent elastic bounce on iOS */
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1e293b;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #475569;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+      }
+
+      /* --- EFFETTO ONDA --- */
+      .wave-card {
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      
+      .wave-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4); /* Blue glow */
+      }
+
+      /* L'onda vera e propria */
+      .wave-card::after {
+        content: "";
+        position: absolute;
+        bottom: -50%; /* Parte nascosta sotto */
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background-color: rgba(59, 130, 246, 0.1); /* Colore onda tenue */
+        border-radius: 40%;
+        z-index: -1;
+        animation: wave-spin 6s linear infinite;
+        transition: bottom 0.5s ease-out;
+        transform-origin: 50% 48%;
+        pointer-events: none; /* FIX: allow clicks to pass through */
+      }
+
+      .wave-card:hover::after {
+        bottom: -10%; /* Sale su hover */
+        background-color: rgba(59, 130, 246, 0.2); /* Diventa leggermente più visibile */
+      }
+
+      @keyframes wave-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      
+      /* Effetto onda secondario per profondità */
+      .wave-card::before {
+        content: "";
+        position: absolute;
+        bottom: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background-color: rgba(59, 130, 246, 0.15);
+        border-radius: 45%;
+        z-index: -1;
+        animation: wave-spin 9s linear infinite reverse; /* Gira al contrario */
+        transition: bottom 0.7s ease-out;
+        pointer-events: none; /* FIX: allow clicks to pass through */
+      }
+
+      .wave-card:hover::before {
+        bottom: -20%;
+      }
+
+      /* iOS SafeArea padding adjustments */
+      @supports (padding-bottom: env(safe-area-inset-bottom)) {
+        .pb-safe {
+          padding-bottom: env(safe-area-inset-bottom);
+        }
+      }
+
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.4.1",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
+  }
+}
+</script>
+</head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

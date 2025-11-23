@@ -7,7 +7,7 @@ import History from './components/History';
 import Settings from './components/Settings';
 import Assistant from './components/Assistant';
 import WorkLog from './components/WorkLog';
-import { LayoutDashboard, PlusCircle, History as HistoryIcon, Settings as SettingsIcon, MessageSquare, Anchor, Wrench } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, History as HistoryIcon, Settings as SettingsIcon, MessageSquare, Anchor, Wrench, Bot } from 'lucide-react';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(INITIAL_STATE);
@@ -286,6 +286,7 @@ const App: React.FC = () => {
           <MobileNavItem icon={<PlusCircle size={20} />} label="Attività" active={activeTab === 'action'} onClick={() => setActiveTab('action')} />
           <MobileNavItem icon={<Wrench size={20} />} label="Lavori" active={activeTab === 'worklog'} onClick={() => setActiveTab('worklog')} />
           <MobileNavItem icon={<HistoryIcon size={20} />} label="Storico" active={activeTab === 'history'} onClick={() => setActiveTab('history')} />
+          <MobileNavItem icon={<Bot size={20} />} label="Consigliere" active={activeTab === 'assistant'} onClick={() => setActiveTab('assistant')} />
           <MobileNavItem icon={<SettingsIcon size={20} />} label="Opzioni" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
       </div>
     </div>
@@ -314,7 +315,7 @@ const MobileNavItem = ({ icon, label, active, onClick }: any) => (
         }`}
     >
         {icon}
-        <span className="text-[10px] mt-1">{label}</span>
+        <span className="text-[10px] mt-1 text-center leading-none">{label}</span>
     </button>
 );
 
