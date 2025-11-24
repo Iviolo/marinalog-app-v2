@@ -60,11 +60,16 @@ const Assistant: React.FC<AssistantProps> = ({ state }) => {
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setLoading(true);
 
-    const response = await askMilitaryAdvisor(userMsg, state, apiKey);
-
+    try {
+const response = await askMilitaryAdvisor(userMsg, apiKey);
     setLoading(false);
     setMessages(prev => [...prev, { role: 'ai', text: response }]);
   };
+      } catch (error) {
+              setLoading(false);
+                    const errorMsg = (error instanceof Error ? error.message : 'Errore API sconosciuto');
+                          setMessages(prev => [...prev, { role: 'ai', text: 'Errore: ' + errorMsg }]);
+                              }
 
   // --- RENDER: KEY SETUP SCREEN ---
   if (!isKeySet) {

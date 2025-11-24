@@ -79,3 +79,12 @@ export const INITIAL_STATE: AppState = {
     avatarUrl: "https://picsum.photos/200",
   }
 };
+export interface AppState {
+  apiKey: string;  // AGGIUNGI QUESTA RIGA
+  balances: CustomField[];
+  worklogs: WorkLogEntry[];
+  user: {
+    name: string;
+    rank: string;
+  };
+}
