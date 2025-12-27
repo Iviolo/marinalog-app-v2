@@ -13,19 +13,22 @@ const App: React.FC = () => {
   const [state, setState] = useState<AppState>(INITIAL_STATE);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'action' | 'history' | 'settings' | 'assistant' | 'worklog'>('dashboard');
 
-  // Load from local storage on mount
   useEffect(() => {
     const saved = localStorage.getItem('marinaLogState');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Merge with INITIAL_STATE to ensure new fields like workLogs are present if missing in saved data
         setState(prev => ({
             ...INITIAL_STATE,
             ...parsed,
-            balances: { ...INITIAL_STATE.balances, ...parsed.balances },
-            workLogs: Array.isArray(parsed.workLogs) ? parsed.workLogs : [], // Ensure array exists and is array
-            user: INITIAL_STATE.user // Force user update to apply name change
+            balances: { 
+              ...INITIAL_STATE.balances, 
+              ...parsed.balances,
+              // Migration for renaming
+              recuperoRiposo: parsed.balances?.recuperoRiposo ?? parsed.balances?.festiviRecupero ?? 0
+            },
+            workLogs: Array.isArray(parsed.workLogs) ? parsed.workLogs : [],
+            user: INITIAL_STATE.user
         }));
       } catch (e) {
         console.error("Failed to load state", e);
@@ -33,7 +36,6 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Save to local storage on change
   useEffect(() => {
     localStorage.setItem('marinaLogState', JSON.stringify(state));
   }, [state]);
@@ -47,8 +49,9 @@ const App: React.FC = () => {
 
     setState(prev => {
       const newBalances = { ...prev.balances };
+      const dayOfWeek = new Date(entry.date).getDay();
+      const isSunday = dayOfWeek === 0;
 
-      // Logic to update balances based on entry type
       switch (entry.type) {
         case 'ordinaria':
           newBalances.ordinaria -= entry.quantity;
@@ -60,18 +63,25 @@ const App: React.FC = () => {
           newBalances.malattia -= entry.quantity;
           break;
         case 'guardia':
-          newBalances.hoursBank += entry.quantity; // Add hours
-          newBalances.moneyBank += entry.moneyAccrued; // Add money
+          newBalances.hoursBank += entry.quantity;
+          newBalances.moneyBank += entry.moneyAccrued;
+          break;
+        case 'straordinario':
+          newBalances.hoursBank += entry.quantity;
+          // NORMATIVA: Solo di domenica/festivo si recupera la giornata di riposo (1gg)
+          if (isSunday) {
+            newBalances.recuperoRiposo += 1;
+            entry.isWeekendBonus = true;
+          }
           break;
         case 'recupero':
-          newBalances.hoursBank -= entry.quantity; // Subtract hours
+          newBalances.hoursBank -= entry.quantity;
           break;
         case 'permesso':
-          newBalances.hoursBank -= entry.quantity; // Subtract hours
+          newBalances.hoursBank -= entry.quantity;
           break;
         case 'rettifica':
            if (entry.targetBalance) {
-               // Add quantity directly (can be negative if subtraction was selected)
                const current = newBalances[entry.targetBalance] || 0;
                newBalances[entry.targetBalance] = current + entry.quantity;
            }
@@ -107,7 +117,6 @@ const App: React.FC = () => {
     setState(prev => {
       const newBalances = { ...prev.balances };
 
-      // Reverse the logic
       switch (entry.type) {
         case 'ordinaria':
           newBalances.ordinaria += entry.quantity;
@@ -122,6 +131,12 @@ const App: React.FC = () => {
           newBalances.hoursBank -= entry.quantity;
           newBalances.moneyBank -= entry.moneyAccrued;
           break;
+        case 'straordinario':
+          newBalances.hoursBank -= entry.quantity;
+          if (entry.isWeekendBonus) {
+            newBalances.recuperoRiposo -= 1;
+          }
+          break;
         case 'recupero':
           newBalances.hoursBank += entry.quantity;
           break;
@@ -130,7 +145,6 @@ const App: React.FC = () => {
           break;
         case 'rettifica':
            if (entry.targetBalance) {
-               // Reverse the operation
                const current = newBalances[entry.targetBalance] || 0;
                newBalances[entry.targetBalance] = current - entry.quantity;
            }
@@ -185,11 +199,9 @@ const App: React.FC = () => {
       });
   };
 
-  // WORK LOG HANDLERS
   const handleAddWorkLog = (newLog: Omit<WorkLogEntry, 'id' | 'timestamp'>) => {
       const entry: WorkLogEntry = {
           ...newLog,
-          // Use a more unique ID to prevent collision and ensure string type
           id: `work_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           timestamp: Date.now()
       };
@@ -215,20 +227,15 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-navy-900 text-slate-200 font-sans selection:bg-gold-500 selection:text-navy-900 flex flex-col lg:flex-row overflow-hidden relative">
-      
-      {/* Sfondo Marino con Overlay */}
       <div className="absolute inset-0 z-0">
-        {/* Immagine Oceano */}
         <img 
             src="https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?q=80&w=2073&auto=format&fit=crop" 
             alt="Ocean Background" 
             className="w-full h-full object-cover opacity-40"
         />
-        {/* Overlay Gradiente per scurire e integrare col tema */}
         <div className="absolute inset-0 bg-gradient-to-br from-navy-900 via-navy-900/90 to-slate-900/80"></div>
       </div>
 
-      {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-64 bg-slate-900/80 backdrop-blur-xl border-r border-slate-700/50 h-screen p-6 fixed z-20 shadow-2xl">
         <div className="flex items-center gap-3 mb-10 text-white">
             <div className="p-2 bg-gold-500 rounded-lg text-navy-900 shadow-lg shadow-gold-500/30">
@@ -260,7 +267,6 @@ const App: React.FC = () => {
         </div>
       </aside>
 
-      {/* Mobile/Tablet Header */}
       <header className="lg:hidden bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 p-4 sticky top-0 z-30 flex justify-between items-center shadow-lg">
          <div className="flex items-center gap-2 text-white">
             <Anchor className="text-gold-500" size={24} />
@@ -268,7 +274,6 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content - Added z-10 to sit above background */}
       <main className="flex-1 lg:ml-64 p-4 lg:p-8 overflow-y-auto h-screen relative z-10">
         <div className="max-w-6xl mx-auto">
             {activeTab === 'dashboard' && <Dashboard state={state} />}
@@ -280,7 +285,6 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* Mobile Bottom Nav */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-700/50 p-2 flex justify-around z-40 pb-safe shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.5)]">
           <MobileNavItem icon={<LayoutDashboard size={20} />} label="Home" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
           <MobileNavItem icon={<PlusCircle size={20} />} label="Attività" active={activeTab === 'action'} onClick={() => setActiveTab('action')} />

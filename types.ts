@@ -6,6 +6,7 @@ export type LogType =
   | 'guardia' 
   | 'recupero' 
   | 'permesso' 
+  | 'straordinario'
   | 'custom'
   | 'rettifica';
 
@@ -30,6 +31,7 @@ export interface LogEntry {
   endTime?: string; // HH:mm for permits
   notes: string;
   timestamp: number;
+  isWeekendBonus?: boolean; // Specific for Sunday/Holiday recovery
 }
 
 export interface WorkLogEntry {
@@ -50,6 +52,7 @@ export interface AppState {
     malattia: number;
     hoursBank: number; // Ore recupero accumulate/spese
     moneyBank: number; // Euro accumulati
+    recuperoRiposo: number; // Giorni recupero riposo (ex festiviRecupero)
     [key: string]: number; // For custom fields balances
   };
   history: LogEntry[];
@@ -69,6 +72,7 @@ export const INITIAL_STATE: AppState = {
     malattia: 45,
     hoursBank: 0,
     moneyBank: 0,
+    recuperoRiposo: 0,
   },
   history: [],
   workLogs: [],
@@ -79,12 +83,3 @@ export const INITIAL_STATE: AppState = {
     avatarUrl: "https://picsum.photos/200",
   }
 };
-export interface AppState {
-  apiKey: string;  // AGGIUNGI QUESTA RIGA
-  balances: CustomField[];
-  worklogs: WorkLogEntry[];
-  user: {
-    name: string;
-    rank: string;
-  };
-}

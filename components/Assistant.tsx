@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { AppState } from '../types';
 import { askMilitaryAdvisor } from '../services/geminiService';
-import { Send, Loader2, User, Bot, Key, Lock, Trash2, CheckCircle } from 'lucide-react';
+import { Send, Loader2, User, Bot } from 'lucide-react';
 
 interface AssistantProps {
   state: AppState;
@@ -16,44 +17,14 @@ const Assistant: React.FC<AssistantProps> = ({ state }) => {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // State for API Key
-  const [apiKey, setApiKey] = useState<string>('');
-  const [tempKey, setTempKey] = useState('');
-  const [isKeySet, setIsKeySet] = useState(false);
-
-  // Load Key on Mount
-  useEffect(() => {
-    const savedKey = localStorage.getItem('gemini_api_key');
-    if (savedKey) {
-      setApiKey(savedKey);
-      setIsKeySet(true);
-    }
-  }, []);
-
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  const handleSaveKey = () => {
-    if (!tempKey.trim()) return;
-    localStorage.setItem('gemini_api_key', tempKey);
-    setApiKey(tempKey);
-    setIsKeySet(true);
-    setTempKey('');
-  };
-
-  const handleRemoveKey = () => {
-    if(window.confirm("Rimuovere la chiave API? L'assistente smetterà di funzionare.")) {
-      localStorage.removeItem('gemini_api_key');
-      setApiKey('');
-      setIsKeySet(false);
-    }
-  };
-
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !apiKey) return;
+    if (!input.trim()) return;
 
     const userMsg = input;
     setInput('');
@@ -61,56 +32,21 @@ const Assistant: React.FC<AssistantProps> = ({ state }) => {
     setLoading(true);
 
     try {
-const response = await askMilitaryAdvisor(userMsg, apiKey);
-    setLoading(false);
-    setMessages(prev => [...prev, { role: 'ai', text: response }]);
+      // Fix: Passed missing 'state' argument to askMilitaryAdvisor and removed the explicit apiKey argument
+      // to rely on the SDK internal use of process.env.API_KEY as per guidelines.
+      // Also fixed the syntax errors (stray braces and catch block alignment).
+      const response = await askMilitaryAdvisor(userMsg, state);
+      setLoading(false);
+      setMessages(prev => [...prev, { role: 'ai', text: response }]);
+    } catch (error) {
+      setLoading(false);
+      const errorMsg = (error instanceof Error ? error.message : 'Errore API sconosciuto');
+      setMessages(prev => [...prev, { role: 'ai', text: 'Errore: ' + errorMsg }]);
+    }
   };
-      } catch (error) {
-              setLoading(false);
-                    const errorMsg = (error instanceof Error ? error.message : 'Errore API sconosciuto');
-                          setMessages(prev => [...prev, { role: 'ai', text: 'Errore: ' + errorMsg }]);
-                              }
-
-  // --- RENDER: KEY SETUP SCREEN ---
-  if (!isKeySet) {
-    return (
-      <div className="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-700 shadow-lg h-[600px] flex flex-col items-center justify-center p-8 animate-fade-in text-center mb-20 lg:mb-0">
-        <div className="bg-slate-700/50 p-6 rounded-full mb-6 ring-4 ring-gold-500/20">
-            <Lock size={48} className="text-gold-500" />
-        </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Attiva il Consigliere</h2>
-        <p className="text-slate-400 mb-8 max-w-md">
-            Per utilizzare l'intelligenza artificiale, è necessario inserire una API Key di Google Gemini. La chiave verrà salvata esclusivamente sul tuo dispositivo.
-        </p>
-
-        <div className="w-full max-w-sm space-y-4">
-            <div className="relative">
-                <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" size={20}/>
-                <input 
-                    type="password"
-                    value={tempKey}
-                    onChange={(e) => setTempKey(e.target.value)}
-                    placeholder="Incolla qui la tua API Key"
-                    className="w-full bg-slate-900 border border-slate-600 rounded-xl py-3 pl-10 pr-4 text-white focus:ring-2 focus:ring-gold-500 outline-none"
-                />
-            </div>
-            <button 
-                onClick={handleSaveKey}
-                disabled={!tempKey}
-                className="w-full bg-gold-500 hover:bg-gold-600 disabled:opacity-50 disabled:cursor-not-allowed text-navy-900 font-bold py-3 rounded-xl transition-all shadow-lg shadow-gold-500/20 flex items-center justify-center gap-2"
-            >
-                <CheckCircle size={20} />
-                Salva e Attiva
-            </button>
-        </div>
-        <p className="mt-6 text-xs text-slate-500">
-            Non hai una chiave? <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-blue-400 underline hover:text-blue-300">Ottienila qui gratuitamente</a>.
-        </p>
-      </div>
-    );
-  }
 
   // --- RENDER: CHAT INTERFACE ---
+  // Note: API key management UI has been removed as it is prohibited by coding guidelines.
   return (
     <div className="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-700 shadow-lg flex flex-col h-[600px] overflow-hidden animate-fade-in mb-20 lg:mb-0">
       
@@ -123,16 +59,9 @@ const response = await askMilitaryAdvisor(userMsg, apiKey);
             </div>
             <div>
                 <h3 className="font-bold text-white leading-tight">Consigliere Navale</h3>
-                <p className="text-xs text-emerald-400">Online • Gemini 2.5 Flash</p>
+                <p className="text-xs text-emerald-400">Online • Gemini 3 Flash</p>
             </div>
         </div>
-        <button 
-            onClick={handleRemoveKey}
-            className="p-2 text-slate-500 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-colors"
-            title="Rimuovi API Key"
-        >
-            <Trash2 size={18} />
-        </button>
       </div>
 
       {/* Messages Area */}

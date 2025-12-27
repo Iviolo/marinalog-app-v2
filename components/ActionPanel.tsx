@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { LogType, AppState, LogEntry, CustomField } from '../types';
-import { Calendar as CalendarIcon, Clock, Save, AlertCircle, Sliders, Plus, Minus, Edit } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Save, AlertCircle, Sliders, Plus, Minus, Edit, Star, Coffee } from 'lucide-react';
 
 interface ActionPanelProps {
   state: AppState;
@@ -13,25 +13,24 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ state, onAddEntry }) => {
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [startTime, setStartTime] = useState<string>('08:00');
   const [endTime, setEndTime] = useState<string>('10:00');
+  const [overtimeHours, setOvertimeHours] = useState<number>(1);
   const [notes, setNotes] = useState<string>('');
   const [customFieldId, setCustomFieldId] = useState<string>('');
   
-  // Rettifica states
   const [rettificaTarget, setRettificaTarget] = useState<string>('ordinaria');
   const [rettificaOp, setRettificaOp] = useState<'add'|'subtract'>('add');
   const [rettificaQty, setRettificaQty] = useState<number>(1);
 
-  const [calculatedInfo, setCalculatedInfo] = useState<{hours: number, money: number} | null>(null);
+  const [calculatedInfo, setCalculatedInfo] = useState<{hours: number, money: number, isSunday: boolean} | null>(null);
 
-  // Helper to calculate effects before submitting
   useEffect(() => {
     const dayOfWeek = new Date(date).getDay(); // 0=Sun, 6=Sat
+    const isSunday = dayOfWeek === 0;
     let hours = 0;
     let money = 0;
 
     if (type === 'guardia') {
-        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-        if (isWeekend) {
+        if (dayOfWeek === 0 || dayOfWeek === 6) { // Weekend
             hours = 24;
             money = 90;
         } else {
@@ -43,17 +42,17 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ state, onAddEntry }) => {
             hours = -4;
         } else if (dayOfWeek >= 1 && dayOfWeek <= 4) { // Mon-Thu
             hours = -8;
-        } else {
-            hours = 0;
         }
     } else if (type === 'permesso') {
         const start = parseInt(startTime.split(':')[0]) * 60 + parseInt(startTime.split(':')[1]);
         const end = parseInt(endTime.split(':')[0]) * 60 + parseInt(endTime.split(':')[1]);
         hours = Math.max(0, (end - start) / 60);
+    } else if (type === 'straordinario') {
+        hours = overtimeHours;
     }
 
-    setCalculatedInfo({ hours, money });
-  }, [type, date, startTime, endTime]);
+    setCalculatedInfo({ hours, money, isSunday });
+  }, [type, date, startTime, endTime, overtimeHours]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,13 +63,11 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ state, onAddEntry }) => {
 
     if (type === 'ordinaria' || type === 'legge937' || type === 'malattia') {
         quantity = 1;
-    } else if (type === 'guardia') {
+    } else if (type === 'guardia' || type === 'straordinario' || type === 'permesso') {
         quantity = calculatedInfo?.hours || 0;
         moneyAccrued = calculatedInfo?.money || 0;
     } else if (type === 'recupero') {
         quantity = Math.abs(calculatedInfo?.hours || 0);
-    } else if (type === 'permesso') {
-        quantity = calculatedInfo?.hours || 0;
     } else if (type === 'custom') {
         quantity = 1;
     } else if (type === 'rettifica') {
@@ -92,13 +89,14 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ state, onAddEntry }) => {
 
     setNotes('');
     setRettificaQty(1);
+    setOvertimeHours(1);
   };
 
-  // Options definition with strong typing
   const options: { id: LogType; label: string; color: string; isCustom?: boolean; customId?: string }[] = [
     { id: 'ordinaria', label: 'Licenza Ordinaria', color: 'bg-blue-600' },
     { id: 'legge937', label: 'Legge 937', color: 'bg-yellow-600' },
     { id: 'malattia', label: 'Malattia', color: 'bg-red-600' },
+    { id: 'straordinario', label: 'Straordinario', color: 'bg-indigo-600' },
     { id: 'guardia', label: 'Guardia', color: 'bg-purple-600' },
     { id: 'recupero', label: 'Recupero', color: 'bg-emerald-600' },
     { id: 'permesso', label: 'Permesso Orario', color: 'bg-orange-600' },
@@ -110,6 +108,7 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ state, onAddEntry }) => {
       { id: 'ordinaria', label: 'Licenza Ordinaria', unit: 'giorni' },
       { id: 'legge937', label: 'Legge 937', unit: 'giorni' },
       { id: 'malattia', label: 'Malattia', unit: 'giorni' },
+      { id: 'recuperoRiposo', label: 'Recupero Riposo', unit: 'giorni' },
       { id: 'hoursBank', label: 'Banca Ore', unit: 'ore' },
       { id: 'moneyBank', label: 'Compensi', unit: '€' },
       ...state.customFields.map(f => ({ id: f.id, label: f.name, unit: f.unit }))
@@ -126,7 +125,6 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ state, onAddEntry }) => {
       
       <form onSubmit={handleSubmit} className="space-y-6">
         
-        {/* Type Selector */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
            {options.map((opt, idx) => (
                <button
@@ -146,7 +144,6 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ state, onAddEntry }) => {
            ))}
         </div>
 
-        {/* Date Input */}
         <div className="space-y-2">
           <label className="text-slate-400 text-sm font-medium">Data Evento</label>
           <div className="relative">
@@ -161,7 +158,6 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ state, onAddEntry }) => {
           </div>
         </div>
 
-        {/* RETTIFICA PANEL */}
         {type === 'rettifica' && (
             <div className="bg-slate-700/30 p-4 rounded-xl border border-slate-600 space-y-4">
                 <div className="flex items-center gap-2 text-pink-400 mb-2">
@@ -214,11 +210,24 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ state, onAddEntry }) => {
                         />
                     </div>
                 </div>
-                <p className="text-xs text-slate-400 italic">Questa operazione modificherà direttamente il saldo selezionato senza applicare regole automatiche.</p>
             </div>
         )}
 
-        {/* Conditional Inputs based on Standard Types */}
+        {type === 'straordinario' && (
+          <div className="space-y-2">
+             <label className="text-slate-400 text-sm">Ore Straordinario</label>
+             <div className="relative">
+                <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" size={18}/>
+                <input 
+                  type="number" step="0.5" min="0.1" required
+                  value={overtimeHours}
+                  onChange={(e) => setOvertimeHours(parseFloat(e.target.value))}
+                  className="w-full bg-slate-900/50 border border-slate-600 rounded-xl py-3 pl-10 pr-4 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+             </div>
+          </div>
+        )}
+
         {type === 'permesso' && (
           <div className="grid grid-cols-2 gap-4">
              <div className="space-y-2">
@@ -242,7 +251,6 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ state, onAddEntry }) => {
           </div>
         )}
 
-        {/* Notes */}
         <div className="space-y-2">
             <label className="text-slate-400 text-sm font-medium">Note (Opzionale)</label>
             <textarea 
@@ -253,21 +261,30 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ state, onAddEntry }) => {
             />
         </div>
 
-        {/* Preview Card for Standard Types */}
         {type !== 'rettifica' && (
             <div className="bg-slate-700/30 rounded-xl p-4 border border-slate-600/50 flex items-start gap-3">
                 <AlertCircle className="text-gold-500 mt-1 flex-shrink-0" size={20} />
                 <div className="text-sm text-slate-300">
-                    <p className="font-semibold text-white mb-1">Riepilogo Azione:</p>
+                    <p className="font-semibold text-white mb-1">Riepilogo Normativa:</p>
                     <ul className="list-disc list-inside space-y-1">
+                        {type === 'straordinario' && (
+                            <>
+                              <li>Accredito: <strong>+{calculatedInfo?.hours} ore</strong> in banca ore (1:1).</li>
+                              {calculatedInfo?.isSunday ? (
+                                <li className="text-emerald-400 font-bold flex items-center gap-1">
+                                  <Coffee size={14}/> Ripresa Riposo: +1 giorno Recupero Riposo!
+                                </li>
+                              ) : (
+                                <li className="text-slate-400 italic">Sabato/Feriale: nessun recupero giornata extra.</li>
+                              )}
+                            </>
+                        )}
                         {type === 'guardia' && <li>Accredito: <strong>+{calculatedInfo?.hours} ore</strong> in banca ore.</li>}
-                        {type === 'guardia' && <li>Compenso: <strong>+€ {calculatedInfo?.money}</strong>.</li>}
-                        {type === 'recupero' && <li>Addebito: <strong>{calculatedInfo?.hours} ore</strong> (giornata lavorativa).</li>}
+                        {type === 'guardia' && <li>Compenso: <strong>+€ {calculatedInfo?.money}</strong> (CFG).</li>}
+                        {type === 'recupero' && <li>Addebito: <strong>{calculatedInfo?.hours} ore</strong>.</li>}
                         {type === 'permesso' && <li>Permesso di <strong>{calculatedInfo?.hours.toFixed(2)} ore</strong>.</li>}
                         {type === 'ordinaria' && <li>Scalata 1 giornata di Licenza Ordinaria.</li>}
                         {type === 'legge937' && <li>Scalata 1 giornata di Legge 937.</li>}
-                        {type === 'malattia' && <li>Scalata 1 giornata dal plafond malattia.</li>}
-                        {type === 'custom' && <li>Scalata 1 unità dal saldo personalizzato.</li>}
                     </ul>
                 </div>
             </div>

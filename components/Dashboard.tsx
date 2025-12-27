@@ -2,7 +2,7 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { AppState } from '../types';
-import { Shield, Clock, Banknote, HeartPulse, Calendar, Award } from 'lucide-react';
+import { Shield, Clock, Banknote, HeartPulse, Calendar, Award, Coffee } from 'lucide-react';
 
 interface DashboardProps {
   state: AppState;
@@ -11,9 +11,10 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ state }) => {
   
   const dataPie = [
-    { name: 'Ordinaria', value: state.balances.ordinaria, color: '#3b82f6' }, // blue-500
-    { name: 'L. 937', value: state.balances.legge937, color: '#eab308' }, // yellow-500
-    { name: 'Malattia', value: state.balances.malattia, color: '#ef4444' }, // red-500
+    { name: 'Ordinaria', value: state.balances.ordinaria, color: '#3b82f6' },
+    { name: 'L. 937', value: state.balances.legge937, color: '#eab308' },
+    { name: 'Malattia', value: state.balances.malattia, color: '#ef4444' },
+    { name: 'Recupero Riposo', value: state.balances.recuperoRiposo, color: '#8b5cf6' },
   ];
 
   const historyChartData = state.history.slice(0, 7).map(entry => ({
@@ -24,8 +25,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state }) => {
 
   return (
     <div className="space-y-6 animate-fade-in pb-20 lg:pb-0">
-      {/* Header Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         
         <div className="wave-card bg-slate-800/60 backdrop-blur-md p-6 rounded-2xl border border-slate-700 shadow-lg relative group cursor-pointer">
           <div className="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity z-0">
@@ -61,6 +61,22 @@ const Dashboard: React.FC<DashboardProps> = ({ state }) => {
 
         <div className="wave-card bg-slate-800/60 backdrop-blur-md p-6 rounded-2xl border border-slate-700 shadow-lg relative group cursor-pointer">
           <div className="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity z-0">
+            <Coffee size={64} />
+          </div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-violet-500/20 rounded-lg text-violet-400">
+                <Coffee size={24} />
+                </div>
+                <h3 className="text-slate-300 font-medium">Recupero Riposo</h3>
+            </div>
+            <div className="text-3xl font-bold text-white drop-shadow-sm">{state.balances.recuperoRiposo} <span className="text-sm text-slate-400 font-normal">giorni</span></div>
+            <div className="mt-2 text-xs text-slate-400">Maturati da lavoro festivo (1:1)</div>
+          </div>
+        </div>
+
+        <div className="wave-card bg-slate-800/60 backdrop-blur-md p-6 rounded-2xl border border-slate-700 shadow-lg relative group cursor-pointer">
+          <div className="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity z-0">
             <Clock size={64} />
           </div>
           <div className="relative z-10">
@@ -71,7 +87,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state }) => {
                 <h3 className="text-slate-300 font-medium">Banca Ore</h3>
             </div>
             <div className="text-3xl font-bold text-white drop-shadow-sm">{state.balances.hoursBank} <span className="text-sm text-slate-400 font-normal">h</span></div>
-            <div className="mt-2 text-xs text-slate-400">Accumulo recuperi e guardie</div>
+            <div className="mt-2 text-xs text-slate-400">Accumulo straordinari/guardie</div>
           </div>
         </div>
 
@@ -93,10 +109,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state }) => {
 
       </div>
 
-      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Pie Chart */}
         <div className="bg-slate-800/50 backdrop-blur-md p-6 rounded-2xl border border-slate-700 shadow-lg">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <HeartPulse className="text-red-400" size={20}/>
@@ -129,7 +142,6 @@ const Dashboard: React.FC<DashboardProps> = ({ state }) => {
           </div>
         </div>
 
-        {/* Activity Bar Chart */}
         <div className="bg-slate-800/50 backdrop-blur-md p-6 rounded-2xl border border-slate-700 shadow-lg">
           <h3 className="text-lg font-semibold text-white mb-4">Attività Recente</h3>
           <div className="h-64 w-full">
@@ -152,10 +164,8 @@ const Dashboard: React.FC<DashboardProps> = ({ state }) => {
             )}
           </div>
         </div>
-
       </div>
 
-      {/* Custom Fields Summary */}
       {state.customFields.length > 0 && (
         <div className="bg-slate-800/50 backdrop-blur-md p-6 rounded-2xl border border-slate-700 shadow-lg">
           <h3 className="text-lg font-semibold text-white mb-4">Categorie Personalizzate</h3>
